@@ -200,14 +200,8 @@ def main():
     st.markdown("### Choose Aspect Ratio")
     aspect_ratios = {
         "1:1 Square": (1024, 1024),
-        "3:4 Portrait": (896, 1152),
-        "4:3 Landscape": (1152, 896),
-        "2:3 Portrait": (832, 1216),
-        "3:2 Landscape": (1216, 832),
-        "9:16 Portrait": (768, 1344),
         "16:9 Landscape": (1344, 768),
-        "2:1 Landscape": (1536, 640),
-        "1:2 Portrait": (640, 1536)
+        "9:16 Portrait": (768, 1344)
     }
     
     # Initialize selected ratio in session state if not present
@@ -215,7 +209,7 @@ def main():
         st.session_state.selected_ratio = (1024, 1024)  # Default to 1:1
     
     # Create columns for aspect ratio buttons
-    ratio_cols = st.columns(len(aspect_ratios))
+    ratio_cols = st.columns(3)
     
     # Display aspect ratio buttons
     for idx, (ratio_name, dimensions) in enumerate(aspect_ratios.items()):
