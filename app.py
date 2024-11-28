@@ -117,7 +117,7 @@ st.markdown("""
 API_KEY = os.getenv("STABILITY_API_KEY")
 API_URL = "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image"
 
-def generate_image(prompt, style="", negative_prompt="", width=1024, height=1024, steps=30):
+def generate_image(prompt, style="", negative_prompt="", width=1024, height=1024, steps=75):
     """Generate an image using Stability AI API"""
     headers = {
         "Accept": "application/json",
@@ -133,7 +133,7 @@ def generate_image(prompt, style="", negative_prompt="", width=1024, height=1024
         "width": width,
         "height": height,
         "seed": 0,  # Random seed
-        "cfg_scale": 7,
+        "cfg_scale": 9,
         "samples": 1,
         "text_prompts": [
             {
@@ -234,28 +234,26 @@ def main():
 
     # Style and quality settings
     st.markdown("### Image Settings")
-    col1, col2, col3 = st.columns(3)
+    col1, col2 = st.columns(2)
     
     with col1:
         style = st.selectbox(
             "Style",
-            ["Photorealistic", "Digital Art", "Cinematic", "Anime", "Oil Painting", "None"],
+            ["Auto (Best Quality)", "Photorealistic", "Digital Art", "Cinematic", "Anime", "Oil Painting", "None"],
             index=0
         )
         
     with col2:
-        quality = st.slider("Quality", 20, 50, 30)
-        
-    with col3:
         negative_prompt = st.text_input("Negative Prompt", placeholder="Things to avoid...")
 
     # Style prompt mappings
     style_prompts = {
-        "Photorealistic": "photorealistic, highly detailed, professional photography, 8k",
-        "Digital Art": "digital art, highly detailed, trending on artstation",
-        "Cinematic": "cinematic, dramatic lighting, movie scene quality",
-        "Anime": "anime style, high quality, detailed anime art",
-        "Oil Painting": "oil painting masterpiece, classical art style",
+        "Auto (Best Quality)": "masterpiece, professional photography, highly detailed, 8k uhd, cinematic lighting, sharp focus, best quality, ultra realistic",
+        "Photorealistic": "photorealistic, highly detailed, professional photography, 8k uhd",
+        "Digital Art": "digital art, highly detailed, trending on artstation, 8k",
+        "Cinematic": "cinematic, dramatic lighting, movie scene quality, 8k",
+        "Anime": "anime style, high quality, detailed anime art, studio quality",
+        "Oil Painting": "oil painting masterpiece, classical art style, museum quality",
         "None": ""
     }
 
@@ -278,7 +276,7 @@ def main():
                     negative_prompt=negative_prompt,
                     width=width,
                     height=height,
-                    steps=quality
+                    steps=75
                 )
                 
                 if image:
