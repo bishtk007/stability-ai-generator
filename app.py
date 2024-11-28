@@ -5,6 +5,9 @@ import io
 import os
 from dotenv import load_dotenv
 import base64
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from analytics import Analytics
 
 # Load environment variables
 load_dotenv()
@@ -117,6 +120,12 @@ st.markdown("""
 API_KEY = os.getenv("STABILITY_API_KEY")
 API_URL = "https://api.stability.ai/v1/generation/realistic-vision-v6/text-to-image"
 
+# Initialize database and analytics
+engine = create_engine(os.getenv("DATABASE_URL"))
+Session = sessionmaker(bind=engine)
+db = Session()
+analytics = Analytics(db)
+
 def generate_image(prompt, style="", negative_prompt="", width=1024, height=1024, steps=50):
     """Generate an image using Stability AI API with Realistic Vision V6.0 B1"""
     headers = {
@@ -179,7 +188,33 @@ def generate_image(prompt, style="", negative_prompt="", width=1024, height=1024
         st.error(f"Error type: {type(e)}")
         return None
 
+def check_user_credits(db, user_id):
+    # Implement logic to check user credits
+    pass
+
+def deduct_credit(db, user_id):
+    # Implement logic to deduct credit
+    pass
+
 def main():
+    # Check authentication
+    if 'user' not in st.session_state and not st.session_state.get('is_login_page', False):
+        st.warning("Please login to use the app")
+        st.session_state.redirect_to_login = True
+        return
+
+    user = st.session_state.get('user')
+    
+    # Check credits
+    if not check_user_credits(db, user.id):
+        st.error("You've run out of credits! Please visit the pricing page to get more.")
+        if st.button("Go to Pricing"):
+            st.session_state.page = "pricing"
+            st.rerun()
+        return
+
+    st.title("AI Art Generator")
+
     # Main heading
     st.markdown('<h1 class="main-heading">Bring your imagination to life</h1>', unsafe_allow_html=True)
 
@@ -267,27 +302,46 @@ def main():
                 # Use selected ratio or default to 1:1
                 width, height = st.session_state.get('selected_ratio', (1024, 1024))
                 
-                image = generate_image(
-                    prompt=prompt,
-                    style=style_prompts[style],
-                    negative_prompt=negative_prompt,
-                    width=width,
-                    height=height,
-                    steps=50  # Set to maximum allowed by API
-                )
-                
-                if image:
-                    # Save image
-                    buf = io.BytesIO()
-                    image.save(buf, format="PNG")
-                    byte_im = buf.getvalue()
+                try:
+                    image = generate_image(
+                        prompt=prompt,
+                        style=style_prompts[style],
+                        negative_prompt=negative_prompt,
+                        width=width,
+                        height=height,
+                        steps=50
+                    )
                     
-                    # Add to session state
-                    st.session_state.generated_images.insert(0, {
-                        'image': image,
-                        'bytes': byte_im,
-                        'prompt': prompt
-                    })
+                    if image:
+                        # Track image generation
+                        analytics.track_image_generation(
+                            user_id=user.id,
+                            prompt=prompt,
+                            style=style,
+                            width=width,
+                            height=height,
+                            image_url=image  # This would be the URL or path to saved image
+                        )
+                        
+                        # Deduct credit
+                        deduct_credit(db, user.id)
+                        
+                        # Display image
+                        st.image(image)
+                        
+                        # Save image
+                        buf = io.BytesIO()
+                        Image.open(io.BytesIO(image)).save(buf, format='PNG')
+                        
+                        # Download button
+                        st.download_button(
+                            "Download Image",
+                            buf.getvalue(),
+                            "ai_generated_image.png",
+                            "image/png"
+                        )
+                except Exception as e:
+                    st.error(f"Error generating image: {str(e)}")
 
     # Display generated images in a grid
     if st.session_state.generated_images:
