@@ -115,10 +115,10 @@ st.markdown("""
 
 # Constants
 API_KEY = os.getenv("STABILITY_API_KEY")
-API_URL = "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image"
+API_URL = "https://api.stability.ai/v1/generation/realistic-vision-v6/text-to-image"
 
 def generate_image(prompt, style="", negative_prompt="", width=1024, height=1024, steps=50):
-    """Generate an image using Stability AI API"""
+    """Generate an image using Stability AI API with Realistic Vision V6.0 B1"""
     headers = {
         "Accept": "application/json",
         "Content-Type": "application/json",
@@ -127,6 +127,12 @@ def generate_image(prompt, style="", negative_prompt="", width=1024, height=1024
 
     # Combine style with prompt if style is selected
     full_prompt = f"{prompt}, {style}" if style else prompt
+
+    # Default negative prompt for Realistic Vision V6.0
+    default_negative = "cartoon, anime, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, normal quality, ((monochrome)), ((grayscale)), bad anatomy, 3d render"
+    
+    # Combine user's negative prompt with default
+    final_negative = f"{default_negative}, {negative_prompt}" if negative_prompt else default_negative
 
     body = {
         "steps": steps,  # Maximum allowed by API is 50
@@ -139,16 +145,13 @@ def generate_image(prompt, style="", negative_prompt="", width=1024, height=1024
             {
                 "text": full_prompt,
                 "weight": 1.0
+            },
+            {
+                "text": final_negative,
+                "weight": -1.0
             }
         ]
     }
-
-    # Add negative prompt if provided
-    if negative_prompt:
-        body["text_prompts"].append({
-            "text": negative_prompt,
-            "weight": -1.0
-        })
 
     try:
         response = requests.post(API_URL, headers=headers, json=body)
@@ -242,12 +245,12 @@ def main():
 
     # Style prompt mappings
     style_prompts = {
-        "Auto (Best Quality)": "masterpiece, professional photography, highly detailed, 8k uhd, cinematic lighting, sharp focus, best quality, ultra realistic",
-        "Photorealistic": "photorealistic, highly detailed, professional photography, 8k uhd",
-        "Digital Art": "digital art, highly detailed, trending on artstation, 8k",
-        "Cinematic": "cinematic, dramatic lighting, movie scene quality, 8k",
-        "Anime": "anime style, high quality, detailed anime art, studio quality",
-        "Oil Painting": "oil painting masterpiece, classical art style, museum quality",
+        "Auto (Best Quality)": "RAW photo, subject, professional photography, highly detailed, 8k uhd, cinematic lighting, sharp focus, best quality, ultra realistic, photorealistic, hyperrealistic",
+        "Photorealistic": "RAW photo, photorealistic, highly detailed, professional photography, 8k uhd, hyperrealistic",
+        "Digital Art": "digital art, highly detailed, trending on artstation, 8k, ultra realistic",
+        "Cinematic": "cinematic shot, dramatic lighting, movie scene quality, 8k, hyperrealistic",
+        "Anime": "anime style, high quality, detailed anime art, studio quality, realistic anime",
+        "Oil Painting": "oil painting masterpiece, classical art style, museum quality, realistic painting",
         "None": ""
     }
 
