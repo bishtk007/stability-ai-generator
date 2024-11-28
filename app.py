@@ -117,7 +117,7 @@ st.markdown("""
 API_KEY = os.getenv("STABILITY_API_KEY")
 API_URL = "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image"
 
-def generate_image(prompt, style="", negative_prompt="", width=1024, height=1024, steps=75):
+def generate_image(prompt, style="", negative_prompt="", width=1024, height=1024, steps=50):
     """Generate an image using Stability AI API"""
     headers = {
         "Accept": "application/json",
@@ -129,11 +129,11 @@ def generate_image(prompt, style="", negative_prompt="", width=1024, height=1024
     full_prompt = f"{prompt}, {style}" if style else prompt
 
     body = {
-        "steps": steps,
+        "steps": steps,  # Maximum allowed by API is 50
         "width": width,
         "height": height,
         "seed": 0,  # Random seed
-        "cfg_scale": 9,
+        "cfg_scale": 9,  # Increased for better prompt adherence
         "samples": 1,
         "text_prompts": [
             {
@@ -270,7 +270,7 @@ def main():
                     negative_prompt=negative_prompt,
                     width=width,
                     height=height,
-                    steps=75
+                    steps=50  # Set to maximum allowed by API
                 )
                 
                 if image:
