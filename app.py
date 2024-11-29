@@ -449,35 +449,37 @@ def generate_video(image, motion_style, duration, quality, prompt=""):
 
         # Map motion styles to parameters
         motion_params = {
-            "Gentle Movement": {"motion_bucket_id": 1, "min_cfg": 1.0},
-            "Zoom In": {"motion_bucket_id": 2, "min_cfg": 1.5},
-            "Zoom Out": {"motion_bucket_id": 3, "min_cfg": 1.5},
-            "Pan Left to Right": {"motion_bucket_id": 4, "min_cfg": 2.0},
-            "Pan Right to Left": {"motion_bucket_id": 5, "min_cfg": 2.0},
-            "Rotate Clockwise": {"motion_bucket_id": 6, "min_cfg": 2.5},
-            "Rotate Counter-clockwise": {"motion_bucket_id": 7, "min_cfg": 2.5}
+            "Gentle Movement": {"motion_bucket_id": 127, "min_cfg": 1.0},
+            "Zoom In": {"motion_bucket_id": 180, "min_cfg": 1.5},
+            "Zoom Out": {"motion_bucket_id": 80, "min_cfg": 1.5},
+            "Pan Left to Right": {"motion_bucket_id": 150, "min_cfg": 2.0},
+            "Pan Right to Left": {"motion_bucket_id": 50, "min_cfg": 2.0},
+            "Rotate Clockwise": {"motion_bucket_id": 200, "min_cfg": 2.5},
+            "Rotate Counter-clockwise": {"motion_bucket_id": 100, "min_cfg": 2.5}
         }
 
         # Map quality to parameters
         quality_params = {
-            "Standard": {"num_frames": 24, "num_inference_steps": 30},
-            "High": {"num_frames": 36, "num_inference_steps": 40},
-            "Ultra": {"num_frames": 48, "num_inference_steps": 50}
+            "Standard": {"num_frames": 14, "num_inference_steps": 25},
+            "High": {"num_frames": 24, "num_inference_steps": 35},
+            "Ultra": {"num_frames": 36, "num_inference_steps": 45}
         }
 
         # Combine parameters
         motion = motion_params[motion_style]
         quality_settings = quality_params[quality]
 
+        # Calculate FPS based on duration and frame count
+        fps = max(8, min(30, int(quality_settings["num_frames"] / duration)))
+
         body = {
             "image": image_base64,
             "motion_bucket_id": motion["motion_bucket_id"],
-            "min_cfg": motion["min_cfg"],
+            "cfg_scale": motion["min_cfg"],
             "num_frames": quality_settings["num_frames"],
             "num_inference_steps": quality_settings["num_inference_steps"],
-            "fps": int(quality_settings["num_frames"] / duration),
-            "seed": random.randint(1, 1000000),
-            "guidance_scale": 12.5
+            "fps": fps,
+            "seed": random.randint(1, 1000000)
         }
 
         if prompt:
@@ -487,10 +489,20 @@ def generate_video(image, motion_style, duration, quality, prompt=""):
         response = requests.post(url, headers=headers, json=body)
         
         if response.status_code != 200:
-            raise Exception(f"Non-200 response: {response.text}")
+            error_msg = response.text
+            try:
+                error_data = response.json()
+                if "message" in error_data:
+                    error_msg = error_data["message"]
+            except:
+                pass
+            raise Exception(f"API Error: {error_msg}")
 
         # Process and return the video
         data = response.json()
+        if not data.get("artifacts"):
+            raise Exception("No video data received from API")
+            
         video_data = base64.b64decode(data["artifacts"][0]["base64"])
         
         # Save video to a temporary file
