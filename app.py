@@ -244,7 +244,7 @@ def generate_image(prompt, style="", negative_prompt="", width=1024, height=1024
         return None
 
     api_host = 'https://api.stability.ai'
-    engine_id = 'realistic-vision-v6'
+    engine_id = 'stable-diffusion-v1-6'
 
     # Combine style with prompt if style is selected
     full_prompt = f"{style} {prompt}".strip() if style else prompt
