@@ -12,104 +12,128 @@ load_dotenv()
 
 # Page config
 st.set_page_config(
-    page_title="AI Image Generator",
+    page_title="AI Art Creator",
     page_icon="🎨",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-# Custom CSS for dark theme
+# Custom CSS for modern dark theme
 st.markdown("""
 <style>
-    /* Dark theme colors */
+    /* Modern Dark Theme Colors */
     :root {
-        --background-color: #09090B;
-        --text-color: #FFFFFF;
-        --secondary-text: #A1A1AA;
-        --border-color: #27272A;
-        --input-bg: #18181B;
-        --button-bg: #3F3F46;
-        --button-hover: #52525B;
+        --background-color: #0D1117;
+        --secondary-bg: #161B22;
+        --text-color: #F0F6FC;
+        --accent-color: #7C3AED;
+        --accent-hover: #9F67FF;
+        --card-bg: #21262D;
+        --border-color: #30363D;
     }
 
-    /* Global dark theme */
+    /* Global Styles */
     .stApp {
-        background-color: var(--background-color) !important;
-        color: var(--text-color) !important;
+        background-color: var(--background-color);
+        color: var(--text-color);
     }
 
-    /* Main heading */
-    .main-heading {
-        font-size: 3rem !important;
-        font-weight: 700 !important;
-        color: var(--text-color) !important;
-        text-align: center !important;
-        margin: 2rem 0 !important;
-        padding: 0 !important;
+    /* Header Styling */
+    .header-container {
+        background: linear-gradient(180deg, var(--secondary-bg) 0%, var(--background-color) 100%);
+        padding: 2rem;
+        border-radius: 1rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
 
-    /* Prompt input styling */
-    .stTextInput > div > div {
-        background-color: var(--input-bg) !important;
-        border: 1px solid var(--border-color) !important;
-        border-radius: 12px !important;
-        color: var(--text-color) !important;
+    /* Navigation Tabs */
+    .stTabs {
+        background: var(--secondary-bg);
+        border-radius: 0.5rem;
+        padding: 0.5rem;
     }
 
-    .stTextInput input {
-        color: var(--text-color) !important;
-        font-size: 1.1rem !important;
-        padding: 1rem !important;
-    }
-
-    /* Button styling */
+    /* Buttons */
     .stButton > button {
-        background-color: var(--button-bg) !important;
-        color: var(--text-color) !important;
-        border: none !important;
-        border-radius: 8px !important;
-        padding: 0.5rem 1.5rem !important;
-        font-weight: 600 !important;
-        transition: all 0.3s ease !important;
+        background: linear-gradient(135deg, #7C3AED 0%, #9F67FF 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
     }
 
     .stButton > button:hover {
-        background-color: var(--button-hover) !important;
+        background: linear-gradient(135deg, #9F67FF 0%, #7C3AED 100%);
         transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
     }
 
-    /* Aspect ratio buttons */
-    .stButton > button[data-testid="baseButton-secondary"] {
-        background-color: var(--input-bg) !important;
-        border: 1px solid var(--border-color) !important;
-        color: var(--text-color) !important;
+    /* Input Fields */
+    .stTextInput > div > div {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 0.5rem;
+        color: var(--text-color);
     }
 
-    /* Settings styling */
+    /* Cards */
+    .gallery-card {
+        background: var(--card-bg);
+        border-radius: 1rem;
+        padding: 1rem;
+        margin: 0.5rem;
+        transition: transform 0.3s ease;
+    }
+
+    .gallery-card:hover {
+        transform: translateY(-5px);
+    }
+
+    /* Selectbox */
     .stSelectbox > div > div {
-        background-color: var(--input-bg) !important;
-        border: 1px solid var(--border-color) !important;
-        color: var(--text-color) !important;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 0.5rem;
+        color: var(--text-color);
     }
 
-    .stSlider > div > div {
-        background-color: var(--button-bg) !important;
+    /* Sidebar */
+    .css-1d391kg {
+        background: var(--secondary-bg);
     }
 
-    /* Hide Streamlit branding */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-
-    /* Section headings */
-    h3 {
-        color: var(--text-color) !important;
-        font-size: 1.2rem !important;
-        margin-top: 2rem !important;
+    /* Footer */
+    .footer {
+        text-align: center;
+        padding: 2rem;
+        margin-top: 3rem;
+        border-top: 1px solid var(--border-color);
     }
 
-    /* Spinner color */
-    .stSpinner > div > div {
-        border-top-color: var(--text-color) !important;
+    /* Social Icons */
+    .social-icons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .social-icons a {
+        color: var(--text-color);
+        text-decoration: none;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .fade-in {
+        animation: fadeIn 0.5s ease-in;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -117,7 +141,7 @@ st.markdown("""
 def generate_image(prompt, style="", negative_prompt="", width=1024, height=1024, steps=50):
     api_key = os.getenv('STABILITY_API_KEY')
     if not api_key:
-        st.error("Please set your STABILITY_API_KEY in the .env file")
+        st.error("Please set your STABILITY_API_KEY in the environment variables")
         return None
 
     api_host = 'https://api.stability.ai'
@@ -161,94 +185,135 @@ def generate_image(prompt, style="", negative_prompt="", width=1024, height=1024
     return Image.open(io.BytesIO(image_data))
 
 def main():
-    st.markdown('<h1 class="main-heading">AI Image Generator</h1>', unsafe_allow_html=True)
+    # Header Section
+    st.markdown('<div class="header-container">', unsafe_allow_html=True)
+    st.title("AI Art Creator")
+    st.markdown("Transform your ideas into stunning digital art with AI")
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    if 'generated_images' not in st.session_state:
-        st.session_state.generated_images = []
+    # Navigation Tabs
+    tab1, tab2, tab3 = st.tabs(["Create", "My Gallery", "Explore"])
 
-    col1, col2 = st.columns([2, 1])
-
-    with col1:
-        prompt = st.text_input("Enter your prompt", placeholder="Describe the image you want to generate...")
+    with tab1:
+        col1, col2 = st.columns([2, 1])
         
-        negative_prompt = st.text_input("Negative prompt (Optional)", 
-                                      placeholder="What you don't want in the image...",
-                                      help="Specify elements you want to exclude from the image")
-
-        styles = [
-            "None",
-            "Photorealistic",
-            "Digital Art",
-            "Cinematic",
-            "Anime",
-            "Oil Painting",
-            "Watercolor",
-            "3D Render",
-            "Comic Book",
-            "Fantasy Art"
-        ]
-        selected_style = st.selectbox("Select Style", styles)
-        style_prompt = "" if selected_style == "None" else selected_style
-
-    with col2:
-        st.write("Choose Aspect Ratio")
-        aspect_ratios = {
-            "1:1 (Square)": (1024, 1024),
-            "16:9 (Landscape)": (1024, 576),
-            "9:16 (Portrait)": (576, 1024)
-        }
-        
-        ar_cols = st.columns(3)
-        selected_ratio = None
-        
-        for idx, (ratio_name, dimensions) in enumerate(aspect_ratios.items()):
-            if ar_cols[idx].button(ratio_name):
-                selected_ratio = dimensions
-
-    if st.button("Generate Image", type="primary"):
-        if not prompt:
-            st.warning("Please enter a prompt first!")
-            return
-
-        if not selected_ratio:
-            selected_ratio = (1024, 1024)  # Default to square if none selected
-
-        with st.spinner("Generating your image..."):
-            image = generate_image(
-                prompt=prompt,
-                style=style_prompt,
-                negative_prompt=negative_prompt,
-                width=selected_ratio[0],
-                height=selected_ratio[1]
+        with col1:
+            prompt = st.text_input(
+                "What will you create today?",
+                placeholder="Describe your artistic vision...",
+                key="prompt_input"
             )
-            
-            if image:
-                st.session_state.generated_images.insert(0, {
-                    'image': image,
-                    'prompt': prompt,
-                    'timestamp': datetime.now()
-                })
-                st.success("Image generated successfully!")
 
-    if st.session_state.generated_images:
-        st.markdown("### Generated Images")
-        
-        cols = st.columns(3)
-        for idx, img_data in enumerate(st.session_state.generated_images):
-            with cols[idx % 3]:
-                st.image(img_data['image'], use_column_width=True)
-                st.caption(f"Prompt: {img_data['prompt']}")
-                
-                img_byte_arr = io.BytesIO()
-                img_data['image'].save(img_byte_arr, format='PNG')
-                img_byte_arr = img_byte_arr.getvalue()
-                
-                st.download_button(
-                    label="Download",
-                    data=img_byte_arr,
-                    file_name=f"generated_image_{idx}.png",
-                    mime="image/png"
+            # Style Selection
+            styles = [
+                "None",
+                "Photorealistic",
+                "Digital Art",
+                "Cinematic",
+                "Anime",
+                "Oil Painting",
+                "Watercolor",
+                "3D Render",
+                "Comic Book",
+                "Fantasy Art"
+            ]
+            selected_style = st.selectbox("Choose Your Style", styles)
+            
+            # Negative Prompt
+            negative_prompt = st.text_input(
+                "Negative Prompt",
+                placeholder="Elements to avoid in your creation...",
+                help="Specify what you don't want in the image"
+            )
+
+        with col2:
+            st.markdown("### Canvas Size")
+            aspect_ratios = {
+                "1:1 Square": (1024, 1024),
+                "16:9 Landscape": (1024, 576),
+                "9:16 Portrait": (576, 1024)
+            }
+            
+            selected_ratio = None
+            for ratio_name, dimensions in aspect_ratios.items():
+                if st.button(ratio_name, key=f"ratio_{ratio_name}"):
+                    selected_ratio = dimensions
+
+        # Generate Button
+        if st.button("✨ Generate Art", type="primary"):
+            if not prompt:
+                st.warning("Please describe what you'd like to create!")
+                return
+
+            if not selected_ratio:
+                selected_ratio = (1024, 1024)  # Default to square
+
+            with st.spinner("Creating your masterpiece... 🎨"):
+                image = generate_image(
+                    prompt=prompt,
+                    style=selected_style if selected_style != "None" else "",
+                    negative_prompt=negative_prompt,
+                    width=selected_ratio[0],
+                    height=selected_ratio[1]
                 )
+                
+                if image:
+                    st.session_state.generated_images.insert(0, {
+                        'image': image,
+                        'prompt': prompt,
+                        'style': selected_style,
+                        'timestamp': datetime.now()
+                    })
+                    st.success("Your artwork is ready! ✨")
+
+    with tab2:
+        if 'generated_images' not in st.session_state:
+            st.session_state.generated_images = []
+
+        if st.session_state.generated_images:
+            st.markdown("### Your Creative Gallery")
+            
+            # Create a grid layout for images
+            cols = st.columns(3)
+            for idx, img_data in enumerate(st.session_state.generated_images):
+                with cols[idx % 3]:
+                    st.markdown('<div class="gallery-card fade-in">', unsafe_allow_html=True)
+                    st.image(img_data['image'], use_column_width=True)
+                    st.caption(f"Prompt: {img_data['prompt']}")
+                    if img_data['style'] != "None":
+                        st.caption(f"Style: {img_data['style']}")
+                    
+                    # Convert image for download
+                    img_byte_arr = io.BytesIO()
+                    img_data['image'].save(img_byte_arr, format='PNG')
+                    img_byte_arr = img_byte_arr.getvalue()
+                    
+                    st.download_button(
+                        "↓ Download",
+                        data=img_byte_arr,
+                        file_name=f"ai_artwork_{idx}.png",
+                        mime="image/png"
+                    )
+                    st.markdown('</div>', unsafe_allow_html=True)
+        else:
+            st.info("Your gallery is empty. Start creating some art! ✨")
+
+    with tab3:
+        st.markdown("### Trending Creations")
+        st.info("Coming soon! Explore and get inspired by the community's artwork.")
+
+    # Footer
+    st.markdown('<div class="footer">', unsafe_allow_html=True)
+    st.markdown("Made with ❤️ by AI Art Creator")
+    st.markdown("""
+        <div class="social-icons">
+            <a href="#" target="_blank">📘 Facebook</a>
+            <a href="#" target="_blank">🐦 Twitter</a>
+            <a href="#" target="_blank">📸 Instagram</a>
+            <a href="#" target="_blank">💻 GitHub</a>
+        </div>
+    """, unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
