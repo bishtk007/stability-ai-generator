@@ -362,10 +362,19 @@ def main():
                 selected_ratio = (1024, 1024)  # Default to square
 
             with st.spinner("Creating your masterpiece... 🎨"):
+                # Ensure prompt is not empty and properly formatted
+                clean_prompt = prompt.strip()
+                if not clean_prompt:
+                    st.warning("Please enter a valid prompt!")
+                    return
+                    
+                # Only add style if it's selected and not "None"
+                style_prompt = selected_style if selected_style and selected_style != "None" else ""
+                
                 image = generate_image(
-                    prompt=prompt,
-                    style=selected_style if selected_style != "None" else "",
-                    negative_prompt=negative_prompt,
+                    prompt=clean_prompt,
+                    style=style_prompt,
+                    negative_prompt=negative_prompt.strip() if negative_prompt else "",
                     width=selected_ratio[0],
                     height=selected_ratio[1]
                 )
@@ -373,7 +382,7 @@ def main():
                 if image:
                     st.session_state.generated_images.insert(0, {
                         'image': image,
-                        'prompt': prompt,
+                        'prompt': clean_prompt,
                         'style': selected_style,
                         'timestamp': datetime.now()
                     })
