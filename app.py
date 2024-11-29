@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 import base64
 from datetime import datetime, timedelta
 import time
+import random
+import tempfile
 
 # Load environment variables
 load_dotenv()
@@ -413,6 +415,95 @@ def generate_image(prompt, style="", width=1024, height=1024):
         st.error(f"Error generating image: {str(e)}")
         return None
 
+def generate_video(image, motion_style, duration, quality, prompt=""):
+    try:
+        api_key = st.secrets["STABILITY_API_KEY"]
+        
+        # Add artificial delay for free users
+        if st.session_state.user_plan == 'free':
+            progress_text = "Generating your video... (Free Plan - Standard Speed)"
+            progress_bar = st.progress(0)
+            
+            # Simulate slower generation with progress updates
+            for i in range(5):
+                time.sleep(1)
+                progress_bar.progress((i + 1) * 20)
+            
+            progress_bar.empty()
+        else:
+            st.info("Generating your video... (Pro Plan - Instant Generation)")
+
+        # Convert image to base64
+        buffered = io.BytesIO()
+        image.save(buffered, format="PNG")
+        image_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
+
+        # Prepare the API request
+        url = "https://api.stability.ai/v1/generation/stable-video-diffusion/text-to-video"
+        
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        }
+
+        # Map motion styles to parameters
+        motion_params = {
+            "Gentle Movement": {"motion_bucket_id": 1, "min_cfg": 1.0},
+            "Zoom In": {"motion_bucket_id": 2, "min_cfg": 1.5},
+            "Zoom Out": {"motion_bucket_id": 3, "min_cfg": 1.5},
+            "Pan Left to Right": {"motion_bucket_id": 4, "min_cfg": 2.0},
+            "Pan Right to Left": {"motion_bucket_id": 5, "min_cfg": 2.0},
+            "Rotate Clockwise": {"motion_bucket_id": 6, "min_cfg": 2.5},
+            "Rotate Counter-clockwise": {"motion_bucket_id": 7, "min_cfg": 2.5}
+        }
+
+        # Map quality to parameters
+        quality_params = {
+            "Standard": {"num_frames": 24, "num_inference_steps": 30},
+            "High": {"num_frames": 36, "num_inference_steps": 40},
+            "Ultra": {"num_frames": 48, "num_inference_steps": 50}
+        }
+
+        # Combine parameters
+        motion = motion_params[motion_style]
+        quality_settings = quality_params[quality]
+
+        body = {
+            "image": image_base64,
+            "motion_bucket_id": motion["motion_bucket_id"],
+            "min_cfg": motion["min_cfg"],
+            "num_frames": quality_settings["num_frames"],
+            "num_inference_steps": quality_settings["num_inference_steps"],
+            "fps": int(quality_settings["num_frames"] / duration),
+            "seed": random.randint(1, 1000000),
+            "guidance_scale": 12.5
+        }
+
+        if prompt:
+            body["text_prompts"] = [{"text": prompt, "weight": 1}]
+
+        # Make the API request
+        response = requests.post(url, headers=headers, json=body)
+        
+        if response.status_code != 200:
+            raise Exception(f"Non-200 response: {response.text}")
+
+        # Process and return the video
+        data = response.json()
+        video_data = base64.b64decode(data["artifacts"][0]["base64"])
+        
+        # Save video to a temporary file
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')
+        temp_file.write(video_data)
+        temp_file.close()
+        
+        return temp_file.name
+
+    except Exception as e:
+        st.error(f"Error generating video: {str(e)}")
+        return None
+
 def main():
     # Add session state for user plan and current tab
     if 'user_plan' not in st.session_state:
@@ -602,13 +693,32 @@ def main():
 
             # Generate video button
             if st.button("Generate Video", type="primary", key="video_generate"):
+                if st.session_state.user_plan == 'free' and st.session_state.images_remaining <= 0:
+                    st.warning("⚡ You've used all your free generations for today! Upgrade to Pro for unlimited generations.")
+                    return
+
                 with st.spinner("Generating your video... This may take a few minutes"):
-                    # Here we'll add the Stable Video Diffusion code
-                    st.info("Video generation will be implemented in the next update using Stable Video Diffusion!")
+                    video_path = generate_video(
+                        image=image,
+                        motion_style=selected_motion,
+                        duration=duration,
+                        quality=quality,
+                        prompt=video_prompt
+                    )
                     
-                    # Placeholder for video display
-                    st.markdown("### Preview")
-                    st.warning("Video generation feature coming soon!")
+                    if video_path:
+                        # Display the video
+                        video_file = open(video_path, 'rb')
+                        video_bytes = video_file.read()
+                        st.video(video_bytes)
+                        video_file.close()
+                        
+                        # Clean up the temporary file
+                        os.unlink(video_path)
+                        
+                        # Update remaining generations for free users
+                        if st.session_state.user_plan == 'free':
+                            st.session_state.images_remaining -= 1
 
 if __name__ == "__main__":
     main()
