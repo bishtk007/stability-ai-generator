@@ -1,10 +1,12 @@
 from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, sessionmaker
 from datetime import datetime
 import os
 from dotenv import load_dotenv
+import streamlit as st
 
+# Load environment variables
 load_dotenv()
 
 Base = declarative_base()
@@ -53,12 +55,42 @@ class Payment(Base):
     # Relationships
     user = relationship("User", back_populates="payments")
 
+def get_db():
+    """Get database session"""
+    if 'db' not in st.session_state:
+        DATABASE_URL = os.getenv('DATABASE_URL')
+        if not DATABASE_URL:
+            st.error("Database URL not found in environment variables!")
+            st.stop()
+            
+        try:
+            # Create engine and session
+            engine = create_engine(DATABASE_URL)
+            SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+            
+            # Create tables
+            Base.metadata.create_all(engine)
+            
+            # Store session in streamlit state
+            st.session_state.db = SessionLocal()
+            
+        except Exception as e:
+            st.error(f"Failed to connect to database: {str(e)}")
+            st.stop()
+    
+    return st.session_state.db
+
 def init_db():
+    """Initialize database"""
     DATABASE_URL = os.getenv('DATABASE_URL')
     if not DATABASE_URL:
-        # Fallback to SQLite for local development
-        DATABASE_URL = 'sqlite:///ai_art_generator.db'
-    
-    engine = create_engine(DATABASE_URL)
-    Base.metadata.create_all(engine)
-    return engine
+        st.error("Database URL not found in environment variables!")
+        st.stop()
+        
+    try:
+        engine = create_engine(DATABASE_URL)
+        Base.metadata.create_all(engine)
+        return engine
+    except Exception as e:
+        st.error(f"Failed to initialize database: {str(e)}")
+        st.stop()
