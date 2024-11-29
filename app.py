@@ -230,15 +230,26 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 def generate_image(prompt, style="", negative_prompt="", width=1024, height=1024, steps=50):
-    try:
-        # First try to get from Streamlit secrets
-        api_key = st.secrets["STABILITY_API_KEY"]
-    except:
-        # Fallback to environment variable
-        api_key = os.getenv('STABILITY_API_KEY')
+    # Try to get API key from environment first
+    api_key = os.getenv('STABILITY_API_KEY')
+    
+    # If not in environment, try Streamlit secrets
+    if not api_key and hasattr(st, 'secrets') and 'STABILITY_API_KEY' in st.secrets:
+        api_key = st.secrets['STABILITY_API_KEY']
         
     if not api_key:
-        st.error("API key not found. Please check your Streamlit secrets configuration.")
+        st.error("""
+        ⚠️ API key not found! Please configure your API key:
+        
+        1. Go to https://share.streamlit.app/
+        2. Find your app "stability-ai-generator"
+        3. Click on the three dots (...)
+        4. Select "Settings"
+        5. Under "Secrets", add:
+        ```
+        STABILITY_API_KEY = "your-api-key-here"
+        ```
+        """)
         return None
 
     api_host = 'https://api.stability.ai'
