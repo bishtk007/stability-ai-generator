@@ -5,33 +5,10 @@ import io
 import os
 from dotenv import load_dotenv
 import base64
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from analytics import Analytics
+from datetime import datetime, timedelta
 
 # Load environment variables
 load_dotenv()
-
-# Get environment variables with fallbacks
-API_KEY = os.getenv("API_KEY")
-if not API_KEY:
-    st.error("⚠️ Stability AI API key not found. Please set it in your environment variables.")
-    st.stop()
-
-# Database configuration
-DATABASE_URL = os.getenv("DATABASE_URL")
-if not DATABASE_URL:
-    st.warning("⚠️ Database URL not found. Some features might be limited.")
-    
-# Initialize database if URL is available
-db = None
-if DATABASE_URL:
-    try:
-        engine = create_engine(DATABASE_URL)
-        Session = sessionmaker(bind=engine)
-        db = Session()
-    except Exception as e:
-        st.error(f"⚠️ Database connection failed: {str(e)}")
 
 # Page config
 st.set_page_config(
@@ -137,254 +114,141 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Constants
-API_URL = "https://api.stability.ai/v1/generation/realistic-vision-v6/text-to-image"
-
-# Initialize analytics
-analytics = Analytics(db)
-
 def generate_image(prompt, style="", negative_prompt="", width=1024, height=1024, steps=50):
-    """Generate an image using Stability AI API with Realistic Vision V6.0 B1"""
-    headers = {
-        "Accept": "application/json",
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {API_KEY}"
-    }
-
-    # Combine style with prompt if style is selected
-    full_prompt = f"{prompt}, {style}" if style else prompt
-
-    # Default negative prompt for Realistic Vision V6.0
-    default_negative = "cartoon, anime, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, normal quality, ((monochrome)), ((grayscale)), bad anatomy, 3d render"
-    
-    # Combine user's negative prompt with default
-    final_negative = f"{default_negative}, {negative_prompt}" if negative_prompt else default_negative
-
-    body = {
-        "steps": steps,  # Maximum allowed by API is 50
-        "width": width,
-        "height": height,
-        "seed": 0,  # Random seed
-        "cfg_scale": 9,  # Increased for better prompt adherence
-        "samples": 1,
-        "text_prompts": [
-            {
-                "text": full_prompt,
-                "weight": 1.0
-            },
-            {
-                "text": final_negative,
-                "weight": -1.0
-            }
-        ]
-    }
-
-    try:
-        response = requests.post(API_URL, headers=headers, json=body)
-        
-        if response.status_code != 200:
-            st.error(f"Error: {response.status_code}")
-            st.error(f"Response: {response.text}")
-            return None
-            
-        data = response.json()
-        if "artifacts" in data and len(data["artifacts"]) > 0:
-            image_data = data["artifacts"][0]["base64"]
-            image_bytes = base64.b64decode(image_data)
-            image = Image.open(io.BytesIO(image_bytes))
-            return image
-        else:
-            st.error("No image data in response")
-            return None
-            
-    except requests.exceptions.HTTPError as http_err:
-        st.error(f"HTTP Error: {http_err}")
-        return None
-    except Exception as e:
-        st.error(f"Error generating image: {str(e)}")
-        st.error(f"Error type: {type(e)}")
+    api_key = os.getenv('STABILITY_API_KEY')
+    if not api_key:
+        st.error("Please set your STABILITY_API_KEY in the .env file")
         return None
 
-def check_user_credits(db, user_id):
-    # Implement logic to check user credits
-    pass
+    api_host = 'https://api.stability.ai'
+    engine_id = 'realistic-vision-v6'
 
-def deduct_credit(db, user_id):
-    # Implement logic to deduct credit
-    pass
+    if style:
+        prompt = f"{prompt}, {style}"
+
+    response = requests.post(
+        f"{api_host}/v1/generation/{engine_id}/text-to-image",
+        headers={
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": f"Bearer {api_key}"
+        },
+        json={
+            "text_prompts": [
+                {
+                    "text": prompt,
+                    "weight": 1
+                },
+                {
+                    "text": negative_prompt,
+                    "weight": -1
+                }
+            ],
+            "cfg_scale": 7,
+            "height": height,
+            "width": width,
+            "samples": 1,
+            "steps": steps,
+        },
+    )
+
+    if response.status_code != 200:
+        st.error(f"Failed to generate image: {response.text}")
+        return None
+
+    data = response.json()
+    image_data = base64.b64decode(data["artifacts"][0]["base64"])
+    return Image.open(io.BytesIO(image_data))
 
 def main():
-    # Check authentication
-    if 'user' not in st.session_state and not st.session_state.get('is_login_page', False):
-        st.warning("Please login to use the app")
-        st.session_state.redirect_to_login = True
-        return
+    st.markdown('<h1 class="main-heading">AI Image Generator</h1>', unsafe_allow_html=True)
 
-    user = st.session_state.get('user')
-    
-    # Check credits
-    if not check_user_credits(db, user.id):
-        st.error("You've run out of credits! Please visit the pricing page to get more.")
-        if st.button("Go to Pricing"):
-            st.session_state.page = "pricing"
-            st.rerun()
-        return
-
-    st.title("AI Art Generator")
-
-    # Main heading
-    st.markdown('<h1 class="main-heading">Bring your imagination to life</h1>', unsafe_allow_html=True)
-
-    # Add some spacing
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # Top prompt bar
-    col1, col2 = st.columns([4, 1])
-    
-    with col1:
-        prompt = st.text_input(
-            "",
-            placeholder="Describe the image you want to create...",
-            label_visibility="collapsed"
-        )
-    
-    with col2:
-        generate_btn = st.button("Generate", use_container_width=True)
-
-    # Aspect ratio selection
-    st.markdown("### Choose Aspect Ratio")
-    aspect_ratios = {
-        "1:1 Square": (1024, 1024),
-        "16:9 Landscape": (1344, 768),
-        "9:16 Portrait": (768, 1344)
-    }
-    
-    # Initialize selected ratio in session state if not present
-    if 'selected_ratio' not in st.session_state:
-        st.session_state.selected_ratio = (1024, 1024)  # Default to 1:1
-    
-    # Create columns for aspect ratio buttons
-    ratio_cols = st.columns(3)
-    
-    # Display aspect ratio buttons
-    for idx, (ratio_name, dimensions) in enumerate(aspect_ratios.items()):
-        with ratio_cols[idx]:
-            # Check if this ratio is currently selected
-            is_selected = st.session_state.selected_ratio == dimensions
-            button_type = "primary" if is_selected else "secondary"
-            
-            if st.button(
-                ratio_name, 
-                key=f"ratio_{ratio_name}", 
-                use_container_width=True,
-                type=button_type
-            ):
-                st.session_state.selected_ratio = dimensions
-
-    # Style and quality settings
-    st.markdown("### Image Settings")
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        style = st.selectbox(
-            "Style",
-            ["Auto (Best Quality)", "Photorealistic", "Digital Art", "Cinematic", "Anime", "Oil Painting", "None"],
-            index=0
-        )
-        
-    with col2:
-        negative_prompt = st.text_input("Negative Prompt", placeholder="Things to avoid...")
-
-    # Style prompt mappings
-    style_prompts = {
-        "Auto (Best Quality)": "RAW photo, subject, professional photography, highly detailed, 8k uhd, cinematic lighting, sharp focus, best quality, ultra realistic, photorealistic, hyperrealistic",
-        "Photorealistic": "RAW photo, photorealistic, highly detailed, professional photography, 8k uhd, hyperrealistic",
-        "Digital Art": "digital art, highly detailed, trending on artstation, 8k, ultra realistic",
-        "Cinematic": "cinematic shot, dramatic lighting, movie scene quality, 8k, hyperrealistic",
-        "Anime": "anime style, high quality, detailed anime art, studio quality, realistic anime",
-        "Oil Painting": "oil painting masterpiece, classical art style, museum quality, realistic painting",
-        "None": ""
-    }
-
-    # Create columns for generated images
     if 'generated_images' not in st.session_state:
         st.session_state.generated_images = []
 
-    # Generate image when button is clicked
-    if generate_btn:
-        if not prompt:
-            st.error("Please enter a prompt first!")
-        else:
-            with st.spinner("Creating your masterpiece..."):
-                # Use selected ratio or default to 1:1
-                width, height = st.session_state.get('selected_ratio', (1024, 1024))
-                
-                try:
-                    image = generate_image(
-                        prompt=prompt,
-                        style=style_prompts[style],
-                        negative_prompt=negative_prompt,
-                        width=width,
-                        height=height,
-                        steps=50
-                    )
-                    
-                    if image:
-                        # Track image generation
-                        analytics.track_image_generation(
-                            user_id=user.id,
-                            prompt=prompt,
-                            style=style,
-                            width=width,
-                            height=height,
-                            image_url=image  # This would be the URL or path to saved image
-                        )
-                        
-                        # Deduct credit
-                        deduct_credit(db, user.id)
-                        
-                        # Display image
-                        st.image(image)
-                        
-                        # Save image
-                        buf = io.BytesIO()
-                        Image.open(io.BytesIO(image)).save(buf, format='PNG')
-                        
-                        # Download button
-                        st.download_button(
-                            "Download Image",
-                            buf.getvalue(),
-                            "ai_generated_image.png",
-                            "image/png"
-                        )
-                except Exception as e:
-                    st.error(f"Error generating image: {str(e)}")
+    col1, col2 = st.columns([2, 1])
 
-    # Display generated images in a grid
+    with col1:
+        prompt = st.text_input("Enter your prompt", placeholder="Describe the image you want to generate...")
+        
+        negative_prompt = st.text_input("Negative prompt (Optional)", 
+                                      placeholder="What you don't want in the image...",
+                                      help="Specify elements you want to exclude from the image")
+
+        styles = [
+            "None",
+            "Photorealistic",
+            "Digital Art",
+            "Cinematic",
+            "Anime",
+            "Oil Painting",
+            "Watercolor",
+            "3D Render",
+            "Comic Book",
+            "Fantasy Art"
+        ]
+        selected_style = st.selectbox("Select Style", styles)
+        style_prompt = "" if selected_style == "None" else selected_style
+
+    with col2:
+        st.write("Choose Aspect Ratio")
+        aspect_ratios = {
+            "1:1 (Square)": (1024, 1024),
+            "16:9 (Landscape)": (1024, 576),
+            "9:16 (Portrait)": (576, 1024)
+        }
+        
+        ar_cols = st.columns(3)
+        selected_ratio = None
+        
+        for idx, (ratio_name, dimensions) in enumerate(aspect_ratios.items()):
+            if ar_cols[idx].button(ratio_name):
+                selected_ratio = dimensions
+
+    if st.button("Generate Image", type="primary"):
+        if not prompt:
+            st.warning("Please enter a prompt first!")
+            return
+
+        if not selected_ratio:
+            selected_ratio = (1024, 1024)  # Default to square if none selected
+
+        with st.spinner("Generating your image..."):
+            image = generate_image(
+                prompt=prompt,
+                style=style_prompt,
+                negative_prompt=negative_prompt,
+                width=selected_ratio[0],
+                height=selected_ratio[1]
+            )
+            
+            if image:
+                st.session_state.generated_images.insert(0, {
+                    'image': image,
+                    'prompt': prompt,
+                    'timestamp': datetime.now()
+                })
+                st.success("Image generated successfully!")
+
     if st.session_state.generated_images:
         st.markdown("### Generated Images")
         
-        # Create rows of 4 images each
-        for i in range(0, len(st.session_state.generated_images), 4):
-            cols = st.columns(4)
-            for j, col in enumerate(cols):
-                if i + j < len(st.session_state.generated_images):
-                    img_data = st.session_state.generated_images[i + j]
-                    with col:
-                        # Container for image and buttons
-                        with st.container():
-                            # Display image with fixed size
-                            st.image(img_data['image'], caption=img_data['prompt'][:50] + "..." if len(img_data['prompt']) > 50 else img_data['prompt'], 
-                                   width=250)  # Fixed width for consistent sizing
-                            
-                            # Download button below image
-                            st.download_button(
-                                "Download",
-                                img_data['bytes'],
-                                f"generated_image_{i+j}.png",
-                                "image/png",
-                                use_container_width=True
-                            )
+        cols = st.columns(3)
+        for idx, img_data in enumerate(st.session_state.generated_images):
+            with cols[idx % 3]:
+                st.image(img_data['image'], use_column_width=True)
+                st.caption(f"Prompt: {img_data['prompt']}")
+                
+                img_byte_arr = io.BytesIO()
+                img_data['image'].save(img_byte_arr, format='PNG')
+                img_byte_arr = img_byte_arr.getvalue()
+                
+                st.download_button(
+                    label="Download",
+                    data=img_byte_arr,
+                    file_name=f"generated_image_{idx}.png",
+                    mime="image/png"
+                )
 
 if __name__ == "__main__":
     main()
