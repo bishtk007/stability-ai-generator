@@ -10,222 +10,127 @@ from datetime import datetime, timedelta
 # Load environment variables
 load_dotenv()
 
-# Page config
-st.set_page_config(
-    page_title="AI Art Creator",
-    page_icon="🎨",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-# Custom CSS for modern dark theme
+# Custom CSS for modern theme
 st.markdown("""
 <style>
     /* Import modern fonts */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-    /* Modern Dark Theme Colors */
+    /* Modern Light Theme Colors */
     :root {
-        --background-color: #0D1117;
-        --secondary-bg: #161B22;
-        --text-color: #F0F6FC;
-        --accent-color: #7C3AED;
-        --accent-hover: #9F67FF;
-        --card-bg: #21262D;
-        --border-color: #30363D;
-        --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+        --text-color: #1E1E1E;
+        --background-color: #FFFFFF;
+        --primary-color: #000000;
+        --accent-color: #333333;
+        --hover-color: #666666;
     }
 
     /* Global Styles */
     .stApp {
-        background-color: var(--background-color);
+        font-family: 'Inter', sans-serif;
         color: var(--text-color);
-        font-family: var(--font-family);
+        background-color: var(--background-color);
     }
 
-    /* Typography */
-    h1 {
-        font-family: var(--font-family);
-        font-weight: 600;
-        font-size: 28px !important;
-        letter-spacing: -0.02em;
-        margin-bottom: 24px !important;
-    }
-
-    h2 {
-        font-family: var(--font-family);
-        font-weight: 500;
-        font-size: 24px !important;
-        letter-spacing: -0.01em;
-        margin: 20px 0 16px !important;
-    }
-
-    h3 {
-        font-family: var(--font-family);
-        font-weight: 500;
-        font-size: 20px !important;
-        letter-spacing: -0.01em;
-        margin: 16px 0 12px !important;
-    }
-
-    p, .stMarkdown {
-        font-family: var(--font-family);
-        font-weight: 400;
-        font-size: 16px !important;
-        line-height: 1.6;
-        margin-bottom: 16px;
-    }
-
-    /* Header Styling */
+    /* Header Styles */
     .header-container {
-        background: linear-gradient(180deg, var(--secondary-bg) 0%, var(--background-color) 100%);
-        padding: 32px;
-        border-radius: 16px;
-        margin-bottom: 32px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         text-align: center;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
     }
 
     .header-title {
-        font-size: 32px !important;
+        font-size: 2.5rem;
         font-weight: 700;
-        letter-spacing: -0.03em;
-        margin-bottom: 12px;
+        margin-bottom: 0.5rem;
+        color: var(--text-color);
     }
 
     .header-subtitle {
-        font-size: 18px !important;
-        font-weight: 400;
-        color: rgba(240, 246, 252, 0.8);
+        font-size: 1.1rem;
+        color: var(--accent-color);
+        margin-bottom: 1rem;
     }
 
-    /* Navigation Tabs */
-    .stTabs {
-        background: var(--secondary-bg);
-        border-radius: 12px;
-        padding: 8px;
-        margin-bottom: 24px;
-    }
-
-    /* Input Fields */
-    .stTextInput > div > div {
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        padding: 8px 16px;
-        font-family: var(--font-family);
-        font-size: 16px !important;
-        transition: all 0.2s ease;
-    }
-
-    .stTextInput > div > div:focus-within {
-        border-color: var(--accent-color);
-        box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
-    }
-
-    /* Buttons */
-    .stButton > button {
-        font-family: var(--font-family);
-        font-weight: 500;
-        font-size: 16px !important;
-        background: linear-gradient(135deg, #7C3AED 0%, #9F67FF 100%);
+    /* Upgrade Banner */
+    .upgrade-banner {
+        background: linear-gradient(135deg, #000000, #333333);
         color: white;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 12px;
-        transition: all 0.3s ease;
-        text-transform: none;
-        letter-spacing: 0;
-        height: auto;
-        margin: 8px 0;
+        padding: 1rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .upgrade-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .upgrade-text {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+
+    .upgrade-button {
+        background-color: white !important;
+        color: black !important;
+        padding: 0.5rem 1.5rem !important;
+        border-radius: 25px !important;
+        border: none !important;
+        font-weight: 500 !important;
+        margin-top: 0.5rem !important;
+        transition: all 0.3s ease !important;
+    }
+
+    .upgrade-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Button Styles */
+    .stButton > button {
+        background-color: white !important;
+        color: black !important;
+        border: 1px solid #E0E0E0 !important;
+        padding: 0.5rem 1rem !important;
+        font-weight: 500 !important;
+        transition: all 0.2s ease !important;
     }
 
     .stButton > button:hover {
-        background: linear-gradient(135deg, #9F67FF 0%, #7C3AED 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+        background-color: #F5F5F5 !important;
+        border-color: #D0D0D0 !important;
     }
 
-    /* Select Box */
-    .stSelectbox > div > div {
-        font-family: var(--font-family);
-        font-size: 16px !important;
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
+    /* Input Styles */
+    .stTextInput > div > div > input {
+        border: 1px solid #E0E0E0 !important;
+        border-radius: 8px !important;
+        padding: 0.75rem !important;
+        font-size: 1rem !important;
+    }
+
+    /* Generated Image Container */
+    .generated-image-container {
+        background-color: white;
+        padding: 1.5rem;
         border-radius: 12px;
-        color: var(--text-color);
-        padding: 8px 16px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        margin-top: 2rem;
     }
 
-    /* Cards */
-    .gallery-card {
-        background: var(--card-bg);
-        border-radius: 16px;
-        padding: 16px;
-        margin: 12px;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        border: 1px solid var(--border-color);
-    }
-
-    .gallery-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
-    }
-
-    .gallery-card img {
-        border-radius: 12px;
-        margin-bottom: 12px;
-    }
-
-    .gallery-card .caption {
-        font-size: 14px !important;
-        color: rgba(240, 246, 252, 0.8);
-        margin-bottom: 8px;
-    }
-
-    /* Footer */
-    .footer {
-        text-align: center;
-        padding: 32px;
-        margin-top: 48px;
-        border-top: 1px solid var(--border-color);
-        font-size: 14px !important;
-    }
-
-    .social-icons {
-        display: flex;
-        justify-content: center;
-        gap: 24px;
-        margin-top: 16px;
-    }
-
-    .social-icons a {
-        color: var(--text-color);
-        text-decoration: none;
-        font-size: 14px !important;
-        opacity: 0.8;
-        transition: opacity 0.2s ease;
-    }
-
-    .social-icons a:hover {
-        opacity: 1;
-    }
-
-    /* Animations */
+    /* Animation */
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
     }
 
-    .fade-in {
-        animation: fadeIn 0.5s ease-out forwards;
+    .animate-fade-in {
+        animation: fadeIn 0.5s ease forwards;
     }
-
-    /* Hide Streamlit Branding */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -291,11 +196,20 @@ def generate_image(prompt, style="", negative_prompt="", width=1024, height=1024
     return image
 
 def main():
-    # Header Section with enhanced typography
+    # Header Section
     st.markdown('<div class="header-container">', unsafe_allow_html=True)
     st.markdown('<h1 class="header-title">AI Art Creator</h1>', unsafe_allow_html=True)
     st.markdown('<p class="header-subtitle">Transform your ideas into stunning digital art with AI</p>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
+
+    # Upgrade Banner
+    st.markdown("""
+        <div class="upgrade-banner">
+            <div class="upgrade-title">🌟 Unlock Premium Features</div>
+            <div class="upgrade-text">Get unlimited generations, priority processing, and exclusive styles</div>
+            <button class="upgrade-button">Upgrade Now - 50% OFF</button>
+        </div>
+    """, unsafe_allow_html=True)
 
     # Navigation Tabs
     tab1, tab2, tab3 = st.tabs(["Create", "My Gallery", "Explore"])
@@ -326,14 +240,6 @@ def main():
                 "Fantasy Art"
             ]
             selected_style = st.selectbox("", styles, label_visibility="collapsed")
-            
-            st.markdown("### Refine Your Creation")
-            negative_prompt = st.text_input(
-                "",
-                placeholder="Specify elements you'd like to avoid in your artwork...",
-                help="Use this to exclude unwanted elements from your creation",
-                label_visibility="collapsed"
-            )
 
         with col2:
             st.markdown("### Canvas Size")
@@ -362,31 +268,37 @@ def main():
                 selected_ratio = (1024, 1024)  # Default to square
 
             with st.spinner("Creating your masterpiece... 🎨"):
-                # Ensure prompt is not empty and properly formatted
                 clean_prompt = prompt.strip()
                 if not clean_prompt:
                     st.warning("Please enter a valid prompt!")
                     return
                     
-                # Only add style if it's selected and not "None"
                 style_prompt = selected_style if selected_style and selected_style != "None" else ""
                 
                 image = generate_image(
                     prompt=clean_prompt,
                     style=style_prompt,
-                    negative_prompt=negative_prompt.strip() if negative_prompt else "",
+                    negative_prompt="",
                     width=selected_ratio[0],
                     height=selected_ratio[1]
                 )
                 
                 if image:
+                    # Display the generated image in a container
+                    st.markdown('<div class="generated-image-container animate-fade-in">', unsafe_allow_html=True)
+                    st.image(image, caption="Your Generated Artwork", use_column_width=True)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                    
+                    # Add to gallery
+                    if 'generated_images' not in st.session_state:
+                        st.session_state.generated_images = []
+                    
                     st.session_state.generated_images.insert(0, {
                         'image': image,
                         'prompt': clean_prompt,
                         'style': selected_style,
                         'timestamp': datetime.now()
                     })
-                    st.success("✨ Your artwork is ready!")
 
     with tab2:
         if 'generated_images' not in st.session_state:
@@ -398,22 +310,8 @@ def main():
             cols = st.columns(3)
             for idx, img_data in enumerate(st.session_state.generated_images):
                 with cols[idx % 3]:
-                    st.markdown('<div class="gallery-card fade-in">', unsafe_allow_html=True)
-                    st.image(img_data['image'], use_column_width=True)
-                    st.markdown(f'<p class="caption">Prompt: {img_data["prompt"]}</p>', unsafe_allow_html=True)
-                    if img_data['style'] != "None":
-                        st.markdown(f'<p class="caption">Style: {img_data["style"]}</p>', unsafe_allow_html=True)
-                    
-                    img_byte_arr = io.BytesIO()
-                    img_data['image'].save(img_byte_arr, format='PNG')
-                    img_byte_arr = img_byte_arr.getvalue()
-                    
-                    st.download_button(
-                        "↓ Download Artwork",
-                        data=img_byte_arr,
-                        file_name=f"ai_artwork_{idx}.png",
-                        mime="image/png"
-                    )
+                    st.markdown('<div class="generated-image-container animate-fade-in">', unsafe_allow_html=True)
+                    st.image(img_data['image'], caption="Your Generated Artwork", use_column_width=True)
                     st.markdown('</div>', unsafe_allow_html=True)
         else:
             st.info("Your gallery is empty. Start creating some amazing artwork! ✨")
