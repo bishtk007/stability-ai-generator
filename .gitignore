@@ -1,4 +1,42 @@
-.env
+# Python
 __pycache__/
-*.pyc
-.DS_Store
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Large model files and AI tools
+*.safetensors
+*.ckpt
+*.pth
+*.bin
+*.onnx
+stable-diffusion-webui-master/
+
+# Generated content
+uploads/
+generated/
+output/
+test_images/
+*.mp4
+temp_repo/
+
+# Environment variables and secrets
+.env
+.streamlit/secrets.toml
+
+# IDE
+.vscode/
+.idea/
+
+# Test and development files
+*test*.py
+offline_app.py
+New folder/
+
+# Temporary files
+tmp/
+*.tmp
