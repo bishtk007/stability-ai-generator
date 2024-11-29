@@ -233,7 +233,7 @@ def generate_image(prompt, style="", negative_prompt="", width=1024, height=1024
     # Try to get API key from Streamlit secrets
     api_key = None
     if hasattr(st, 'secrets'):
-        api_key = st.secrets.get("API_KEY")  # Changed from STABILITY_API_KEY to API_KEY
+        api_key = st.secrets.get("API_KEY")
     
     # Fallback to environment variable if not in secrets
     if not api_key:
@@ -246,8 +246,8 @@ def generate_image(prompt, style="", negative_prompt="", width=1024, height=1024
     api_host = 'https://api.stability.ai'
     engine_id = 'realistic-vision-v6'
 
-    if style:
-        prompt = f"{prompt}, {style}"
+    # Combine style with prompt if style is selected
+    full_prompt = f"{style} {prompt}".strip() if style else prompt
 
     response = requests.post(
         f"{api_host}/v1/generation/{engine_id}/text-to-image",
@@ -259,19 +259,15 @@ def generate_image(prompt, style="", negative_prompt="", width=1024, height=1024
         json={
             "text_prompts": [
                 {
-                    "text": prompt,
+                    "text": full_prompt,
                     "weight": 1
-                },
-                {
-                    "text": negative_prompt,
-                    "weight": -1
                 }
             ],
             "cfg_scale": 7,
             "height": height,
             "width": width,
-            "samples": 1,
             "steps": steps,
+            "samples": 1,
         },
     )
 
@@ -280,8 +276,19 @@ def generate_image(prompt, style="", negative_prompt="", width=1024, height=1024
         return None
 
     data = response.json()
-    image_data = base64.b64decode(data["artifacts"][0]["base64"])
-    return Image.open(io.BytesIO(image_data))
+    
+    if "artifacts" not in data:
+        st.error(f"No image data in response: {data}")
+        return None
+        
+    # Get the base64 string
+    image_b64 = data["artifacts"][0]["base64"]
+    
+    # Convert to PIL Image
+    image_data = base64.b64decode(image_b64)
+    image = Image.open(io.BytesIO(image_data))
+    
+    return image
 
 def main():
     # Header Section with enhanced typography
