@@ -197,6 +197,37 @@ st.markdown("""
         border-color: var(--accent-color) !important;
     }
 
+    /* Options Row */
+    .options-row {
+        display: flex;
+        gap: 1rem;
+        margin: 1rem 0;
+        align-items: center;
+    }
+
+    .option-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .option-label {
+        color: var(--text-color);
+        font-size: 0.9rem;
+        opacity: 0.8;
+        margin-right: 0.5rem;
+    }
+
+    /* Style the select boxes */
+    .stSelectbox > div > div {
+        background-color: var(--card-bg) !important;
+        border-color: var(--border-color) !important;
+    }
+
+    .stSelectbox > div > div:hover {
+        border-color: var(--accent-color) !important;
+    }
+
     /* Section Divider */
     .section-divider {
         margin: 2rem 0;
@@ -300,38 +331,37 @@ def main():
     with col2:
         generate_button = st.button("Generate", type="primary", use_container_width=True)
 
-    # Advanced Options
-    with st.expander("Advanced Options"):
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown("##### Style")
-            styles = [
-                "None",
-                "Photorealistic",
-                "Digital Art",
-                "Cinematic",
-                "Anime",
-                "Oil Painting",
-                "Watercolor",
-                "3D Render",
-                "Comic Book",
-                "Fantasy Art"
-            ]
-            selected_style = st.selectbox("", styles, label_visibility="collapsed")
-        
-        with col2:
-            st.markdown("##### Aspect Ratio")
-            aspect_ratios = {
-                "1:1 Square": (1024, 1024),
-                "16:9 Landscape": (1024, 576),
-                "9:16 Portrait": (576, 1024)
-            }
-            selected_ratio = st.selectbox(
-                "",
-                list(aspect_ratios.keys()),
-                label_visibility="collapsed"
-            )
+    # Style and Aspect Ratio Options
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown('<p class="option-label">Style</p>', unsafe_allow_html=True)
+        styles = [
+            "None",
+            "Photorealistic",
+            "Digital Art",
+            "Cinematic",
+            "Anime",
+            "Oil Painting",
+            "Watercolor",
+            "3D Render",
+            "Comic Book",
+            "Fantasy Art"
+        ]
+        selected_style = st.selectbox("", styles, label_visibility="collapsed")
+    
+    with col2:
+        st.markdown('<p class="option-label">Aspect Ratio</p>', unsafe_allow_html=True)
+        aspect_ratios = {
+            "1:1 Square": (1024, 1024),
+            "16:9 Landscape": (1024, 576),
+            "9:16 Portrait": (576, 1024)
+        }
+        selected_ratio = st.selectbox(
+            "",
+            list(aspect_ratios.keys()),
+            label_visibility="collapsed"
+        )
 
     # Section Divider
     st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
