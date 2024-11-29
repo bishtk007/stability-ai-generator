@@ -239,6 +239,109 @@ st.markdown("""
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     .stDeployButton {display: none;}
+
+    /* Pricing Header */
+    .pricing-header {
+        background: linear-gradient(90deg, #13111C 0%, #1A1A1A 100%);
+        padding: 0.5rem 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .plan-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .plan-badge {
+        background: linear-gradient(90deg, #FF6B6B 0%, #FF8E53 100%);
+        padding: 0.2rem 0.8rem;
+        border-radius: 16px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .plan-details {
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+
+    .upgrade-section {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        z-index: 1000;
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .upgrade-button {
+        background: linear-gradient(90deg, #FF6B6B 0%, #FF8E53 100%);
+        color: white;
+        border: none;
+        padding: 0.5rem 1.5rem;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .upgrade-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2);
+    }
+
+    .pricing-popup {
+        display: none;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 0.5rem;
+        width: 300px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .pricing-popup.show {
+        display: block;
+    }
+
+    .plan-card {
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .plan-card h3 {
+        margin: 0;
+        color: white;
+        font-size: 1.1rem;
+    }
+
+    .plan-card p {
+        margin: 0.5rem 0;
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+
+    .plan-price {
+        font-size: 1.2rem;
+        font-weight: 500;
+        color: white;
+        margin: 0.5rem 0;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -304,9 +407,54 @@ def generate_image(prompt, style="", negative_prompt="", width=1024, height=1024
     return image
 
 def main():
-    # Upgrade Button
+    # Add session state for user plan
+    if 'user_plan' not in st.session_state:
+        st.session_state.user_plan = 'free'
+        st.session_state.images_remaining = 5
+    
+    # Pricing Header
     st.markdown(
-        '<button class="upgrade-button">⚡ Upgrade</button>',
+        '''
+        <div class="pricing-header">
+            <div class="plan-info">
+                <span class="plan-badge">Free Plan</span>
+                <span class="plan-details">5 images remaining today</span>
+            </div>
+        </div>
+        ''',
+        unsafe_allow_html=True
+    )
+
+    # Upgrade Button and Pricing
+    st.markdown(
+        '''
+        <div class="upgrade-section">
+            <button class="upgrade-button" onclick="showPricing()">
+                ⚡ Upgrade
+                <span style="font-size: 0.8rem; opacity: 0.8;">$9.99/mo</span>
+            </button>
+            <div class="pricing-popup" id="pricingPopup">
+                <div class="plan-card">
+                    <h3>Free Plan</h3>
+                    <p>Perfect for trying out</p>
+                    <div class="plan-price">$0/month</div>
+                    <p>• 5 images per day<br>• Standard generation speed<br>• Basic styles</p>
+                </div>
+                <div class="plan-card">
+                    <h3>Pro Plan</h3>
+                    <p>For serious creators</p>
+                    <div class="plan-price">$9.99/month</div>
+                    <p>• Unlimited images<br>• 2x faster generation<br>• All premium styles<br>• Priority support</p>
+                </div>
+            </div>
+        </div>
+        <script>
+        function showPricing() {
+            const popup = document.getElementById('pricingPopup');
+            popup.classList.toggle('show');
+        }
+        </script>
+        ''',
         unsafe_allow_html=True
     )
 
