@@ -12,6 +12,27 @@ from analytics import Analytics
 # Load environment variables
 load_dotenv()
 
+# Get environment variables with fallbacks
+API_KEY = os.getenv("API_KEY")
+if not API_KEY:
+    st.error("⚠️ Stability AI API key not found. Please set it in your environment variables.")
+    st.stop()
+
+# Database configuration
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    st.warning("⚠️ Database URL not found. Some features might be limited.")
+    
+# Initialize database if URL is available
+db = None
+if DATABASE_URL:
+    try:
+        engine = create_engine(DATABASE_URL)
+        Session = sessionmaker(bind=engine)
+        db = Session()
+    except Exception as e:
+        st.error(f"⚠️ Database connection failed: {str(e)}")
+
 # Page config
 st.set_page_config(
     page_title="AI Image Generator",
@@ -117,13 +138,9 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Constants
-API_KEY = os.getenv("STABILITY_API_KEY")
 API_URL = "https://api.stability.ai/v1/generation/realistic-vision-v6/text-to-image"
 
-# Initialize database and analytics
-engine = create_engine(os.getenv("DATABASE_URL"))
-Session = sessionmaker(bind=engine)
-db = Session()
+# Initialize analytics
 analytics = Analytics(db)
 
 def generate_image(prompt, style="", negative_prompt="", width=1024, height=1024, steps=50):
