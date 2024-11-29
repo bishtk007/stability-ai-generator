@@ -21,6 +21,9 @@ st.set_page_config(
 # Custom CSS for modern dark theme
 st.markdown("""
 <style>
+    /* Import modern fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
     /* Modern Dark Theme Colors */
     :root {
         --background-color: #0D1117;
@@ -30,39 +33,111 @@ st.markdown("""
         --accent-hover: #9F67FF;
         --card-bg: #21262D;
         --border-color: #30363D;
+        --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
     }
 
     /* Global Styles */
     .stApp {
         background-color: var(--background-color);
         color: var(--text-color);
+        font-family: var(--font-family);
+    }
+
+    /* Typography */
+    h1 {
+        font-family: var(--font-family);
+        font-weight: 600;
+        font-size: 28px !important;
+        letter-spacing: -0.02em;
+        margin-bottom: 24px !important;
+    }
+
+    h2 {
+        font-family: var(--font-family);
+        font-weight: 500;
+        font-size: 24px !important;
+        letter-spacing: -0.01em;
+        margin: 20px 0 16px !important;
+    }
+
+    h3 {
+        font-family: var(--font-family);
+        font-weight: 500;
+        font-size: 20px !important;
+        letter-spacing: -0.01em;
+        margin: 16px 0 12px !important;
+    }
+
+    p, .stMarkdown {
+        font-family: var(--font-family);
+        font-weight: 400;
+        font-size: 16px !important;
+        line-height: 1.6;
+        margin-bottom: 16px;
     }
 
     /* Header Styling */
     .header-container {
         background: linear-gradient(180deg, var(--secondary-bg) 0%, var(--background-color) 100%);
-        padding: 2rem;
-        border-radius: 1rem;
-        margin-bottom: 2rem;
+        padding: 32px;
+        border-radius: 16px;
+        margin-bottom: 32px;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .header-title {
+        font-size: 32px !important;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        margin-bottom: 12px;
+    }
+
+    .header-subtitle {
+        font-size: 18px !important;
+        font-weight: 400;
+        color: rgba(240, 246, 252, 0.8);
     }
 
     /* Navigation Tabs */
     .stTabs {
         background: var(--secondary-bg);
-        border-radius: 0.5rem;
-        padding: 0.5rem;
+        border-radius: 12px;
+        padding: 8px;
+        margin-bottom: 24px;
+    }
+
+    /* Input Fields */
+    .stTextInput > div > div {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 8px 16px;
+        font-family: var(--font-family);
+        font-size: 16px !important;
+        transition: all 0.2s ease;
+    }
+
+    .stTextInput > div > div:focus-within {
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
     }
 
     /* Buttons */
     .stButton > button {
+        font-family: var(--font-family);
+        font-weight: 500;
+        font-size: 16px !important;
         background: linear-gradient(135deg, #7C3AED 0%, #9F67FF 100%);
         color: white;
         border: none;
-        padding: 0.75rem 1.5rem;
-        border-radius: 0.5rem;
-        font-weight: 600;
+        padding: 12px 24px;
+        border-radius: 12px;
         transition: all 0.3s ease;
+        text-transform: none;
+        letter-spacing: 0;
+        height: auto;
+        margin: 8px 0;
     }
 
     .stButton > button:hover {
@@ -71,70 +146,86 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
     }
 
-    /* Input Fields */
-    .stTextInput > div > div {
+    /* Select Box */
+    .stSelectbox > div > div {
+        font-family: var(--font-family);
+        font-size: 16px !important;
         background: var(--card-bg);
         border: 1px solid var(--border-color);
-        border-radius: 0.5rem;
+        border-radius: 12px;
         color: var(--text-color);
+        padding: 8px 16px;
     }
 
     /* Cards */
     .gallery-card {
         background: var(--card-bg);
-        border-radius: 1rem;
-        padding: 1rem;
-        margin: 0.5rem;
-        transition: transform 0.3s ease;
+        border-radius: 16px;
+        padding: 16px;
+        margin: 12px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid var(--border-color);
     }
 
     .gallery-card:hover {
-        transform: translateY(-5px);
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
     }
 
-    /* Selectbox */
-    .stSelectbox > div > div {
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-        border-radius: 0.5rem;
-        color: var(--text-color);
+    .gallery-card img {
+        border-radius: 12px;
+        margin-bottom: 12px;
     }
 
-    /* Sidebar */
-    .css-1d391kg {
-        background: var(--secondary-bg);
+    .gallery-card .caption {
+        font-size: 14px !important;
+        color: rgba(240, 246, 252, 0.8);
+        margin-bottom: 8px;
     }
 
     /* Footer */
     .footer {
         text-align: center;
-        padding: 2rem;
-        margin-top: 3rem;
+        padding: 32px;
+        margin-top: 48px;
         border-top: 1px solid var(--border-color);
+        font-size: 14px !important;
     }
 
-    /* Social Icons */
     .social-icons {
         display: flex;
         justify-content: center;
-        gap: 1rem;
-        margin-top: 1rem;
+        gap: 24px;
+        margin-top: 16px;
     }
 
     .social-icons a {
         color: var(--text-color);
         text-decoration: none;
+        font-size: 14px !important;
+        opacity: 0.8;
+        transition: opacity 0.2s ease;
+    }
+
+    .social-icons a:hover {
+        opacity: 1;
     }
 
     /* Animations */
     @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 
     .fade-in {
-        animation: fadeIn 0.5s ease-in;
+        animation: fadeIn 0.5s ease-out forwards;
     }
+
+    /* Hide Streamlit Branding */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -185,10 +276,10 @@ def generate_image(prompt, style="", negative_prompt="", width=1024, height=1024
     return Image.open(io.BytesIO(image_data))
 
 def main():
-    # Header Section
+    # Header Section with enhanced typography
     st.markdown('<div class="header-container">', unsafe_allow_html=True)
-    st.title("AI Art Creator")
-    st.markdown("Transform your ideas into stunning digital art with AI")
+    st.markdown('<h1 class="header-title">AI Art Creator</h1>', unsafe_allow_html=True)
+    st.markdown('<p class="header-subtitle">Transform your ideas into stunning digital art with AI</p>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
     # Navigation Tabs
@@ -198,13 +289,15 @@ def main():
         col1, col2 = st.columns([2, 1])
         
         with col1:
+            st.markdown("### What will you create?")
             prompt = st.text_input(
-                "What will you create today?",
-                placeholder="Describe your artistic vision...",
-                key="prompt_input"
+                "",
+                placeholder="Describe your artistic vision in detail...",
+                key="prompt_input",
+                label_visibility="collapsed"
             )
 
-            # Style Selection
+            st.markdown("### Choose Your Style")
             styles = [
                 "None",
                 "Photorealistic",
@@ -217,13 +310,14 @@ def main():
                 "Comic Book",
                 "Fantasy Art"
             ]
-            selected_style = st.selectbox("Choose Your Style", styles)
+            selected_style = st.selectbox("", styles, label_visibility="collapsed")
             
-            # Negative Prompt
+            st.markdown("### Refine Your Creation")
             negative_prompt = st.text_input(
-                "Negative Prompt",
-                placeholder="Elements to avoid in your creation...",
-                help="Specify what you don't want in the image"
+                "",
+                placeholder="Specify elements you'd like to avoid in your artwork...",
+                help="Use this to exclude unwanted elements from your creation",
+                label_visibility="collapsed"
             )
 
         with col2:
@@ -239,8 +333,12 @@ def main():
                 if st.button(ratio_name, key=f"ratio_{ratio_name}"):
                     selected_ratio = dimensions
 
-        # Generate Button
-        if st.button("✨ Generate Art", type="primary"):
+        # Generate Button with enhanced styling
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            generate_button = st.button("✨ Create Artwork", type="primary", use_container_width=True)
+
+        if generate_button:
             if not prompt:
                 st.warning("Please describe what you'd like to create!")
                 return
@@ -264,7 +362,7 @@ def main():
                         'style': selected_style,
                         'timestamp': datetime.now()
                     })
-                    st.success("Your artwork is ready! ✨")
+                    st.success("✨ Your artwork is ready!")
 
     with tab2:
         if 'generated_images' not in st.session_state:
@@ -273,38 +371,36 @@ def main():
         if st.session_state.generated_images:
             st.markdown("### Your Creative Gallery")
             
-            # Create a grid layout for images
             cols = st.columns(3)
             for idx, img_data in enumerate(st.session_state.generated_images):
                 with cols[idx % 3]:
                     st.markdown('<div class="gallery-card fade-in">', unsafe_allow_html=True)
                     st.image(img_data['image'], use_column_width=True)
-                    st.caption(f"Prompt: {img_data['prompt']}")
+                    st.markdown(f'<p class="caption">Prompt: {img_data["prompt"]}</p>', unsafe_allow_html=True)
                     if img_data['style'] != "None":
-                        st.caption(f"Style: {img_data['style']}")
+                        st.markdown(f'<p class="caption">Style: {img_data["style"]}</p>', unsafe_allow_html=True)
                     
-                    # Convert image for download
                     img_byte_arr = io.BytesIO()
                     img_data['image'].save(img_byte_arr, format='PNG')
                     img_byte_arr = img_byte_arr.getvalue()
                     
                     st.download_button(
-                        "↓ Download",
+                        "↓ Download Artwork",
                         data=img_byte_arr,
                         file_name=f"ai_artwork_{idx}.png",
                         mime="image/png"
                     )
                     st.markdown('</div>', unsafe_allow_html=True)
         else:
-            st.info("Your gallery is empty. Start creating some art! ✨")
+            st.info("Your gallery is empty. Start creating some amazing artwork! ✨")
 
     with tab3:
         st.markdown("### Trending Creations")
-        st.info("Coming soon! Explore and get inspired by the community's artwork.")
+        st.info("Coming soon! Explore and get inspired by the community's artwork. 🎨")
 
-    # Footer
+    # Enhanced Footer
     st.markdown('<div class="footer">', unsafe_allow_html=True)
-    st.markdown("Made with ❤️ by AI Art Creator")
+    st.markdown("Crafted with ❤️ by AI Art Creator")
     st.markdown("""
         <div class="social-icons">
             <a href="#" target="_blank">📘 Facebook</a>
