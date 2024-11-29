@@ -157,6 +157,53 @@ st.markdown("""
         gap: 0.5rem;
     }
 
+    /* Advanced Options */
+    .options-container {
+        display: flex;
+        gap: 1rem;
+        margin: 1rem 0;
+        padding: 0.5rem;
+        background: var(--card-bg);
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+    }
+
+    .option-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .option-label {
+        color: var(--text-color);
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+
+    /* Style and Ratio Buttons */
+    .style-button, .ratio-button {
+        background: transparent !important;
+        color: var(--text-color) !important;
+        border: 1px solid var(--border-color) !important;
+        padding: 0.3rem 0.8rem !important;
+        border-radius: 16px !important;
+        font-size: 0.9rem !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .style-button:hover, .ratio-button:hover,
+    .style-button.active, .ratio-button.active {
+        background: var(--accent-color) !important;
+        border-color: var(--accent-color) !important;
+    }
+
+    /* Section Divider */
+    .section-divider {
+        margin: 2rem 0;
+        border-top: 1px solid var(--border-color);
+        opacity: 0.2;
+    }
+
     /* Hide Streamlit Components */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
@@ -253,7 +300,43 @@ def main():
     with col2:
         generate_button = st.button("Generate", type="primary", use_container_width=True)
 
-    # Navigation
+    # Advanced Options
+    with st.expander("Advanced Options"):
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("##### Style")
+            styles = [
+                "None",
+                "Photorealistic",
+                "Digital Art",
+                "Cinematic",
+                "Anime",
+                "Oil Painting",
+                "Watercolor",
+                "3D Render",
+                "Comic Book",
+                "Fantasy Art"
+            ]
+            selected_style = st.selectbox("", styles, label_visibility="collapsed")
+        
+        with col2:
+            st.markdown("##### Aspect Ratio")
+            aspect_ratios = {
+                "1:1 Square": (1024, 1024),
+                "16:9 Landscape": (1024, 576),
+                "9:16 Portrait": (576, 1024)
+            }
+            selected_ratio = st.selectbox(
+                "",
+                list(aspect_ratios.keys()),
+                label_visibility="collapsed"
+            )
+
+    # Section Divider
+    st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
+
+    # Navigation moved down
     st.markdown(
         '<div class="nav-container">'
         '<a href="#" class="nav-item active">🔍 Explore</a>'
@@ -266,14 +349,31 @@ def main():
     # Handle image generation
     if generate_button and prompt:
         with st.spinner("Creating your masterpiece... 🎨"):
-            image = generate_image(prompt=prompt.strip())
+            # Get the selected ratio dimensions
+            width, height = aspect_ratios[selected_ratio]
+            
+            # Clean the prompt and add style
+            clean_prompt = prompt.strip()
+            if not clean_prompt:
+                st.warning("Please enter a valid prompt!")
+                return
+                
+            style_prompt = selected_style if selected_style and selected_style != "None" else ""
+            
+            image = generate_image(
+                prompt=clean_prompt,
+                style=style_prompt,
+                width=width,
+                height=height
+            )
+            
             if image:
-                # Add to session state
                 if 'generated_images' not in st.session_state:
                     st.session_state.generated_images = []
                 st.session_state.generated_images.insert(0, {
                     'image': image,
-                    'prompt': prompt,
+                    'prompt': clean_prompt,
+                    'style': selected_style,
                     'timestamp': datetime.now()
                 })
 
@@ -284,8 +384,8 @@ def main():
         for idx, img_data in enumerate(st.session_state.generated_images):
             with cols[idx % 3]:
                 st.image(img_data['image'], use_column_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
     else:
-        # Display some placeholder or sample images
         st.markdown(
             '<div class="image-grid">'
             '<div class="image-card">Sample images will appear here</div>'
