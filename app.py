@@ -230,10 +230,15 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 def generate_image(prompt, style="", negative_prompt="", width=1024, height=1024, steps=50):
-    # Try both environment variable names
-    api_key = os.getenv('STABILITY_API_KEY') or st.secrets.get("STABILITY_API_KEY")
+    try:
+        # First try to get from Streamlit secrets
+        api_key = st.secrets["STABILITY_API_KEY"]
+    except:
+        # Fallback to environment variable
+        api_key = os.getenv('STABILITY_API_KEY')
+        
     if not api_key:
-        st.error("API key not found. Please check your environment variables or Streamlit secrets.")
+        st.error("API key not found. Please check your Streamlit secrets configuration.")
         return None
 
     api_host = 'https://api.stability.ai'
