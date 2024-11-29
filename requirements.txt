@@ -7,4 +7,6 @@ sqlalchemy==2.0.19
 bcrypt==4.0.1
 python-jose==3.3.0
 numpy==1.24.3
-psycopg2-binary==2.9.6  # For PostgreSQL support
+psycopg2-binary==2.9.9  # Updated version
+setuptools>=65.5.1  # Added for distutils
+wheel>=0.40.0  # Added for build support
