@@ -22,6 +22,7 @@ st.markdown("""
     /* Base theme */
     .stApp {
         background-color: #1a1b1e;
+        color: white;
     }
     
     /* Hide unnecessary elements */
@@ -48,6 +49,31 @@ st.markdown("""
     .stButton>button {
         background: linear-gradient(45deg, #ff69b4, #ff8c00);
         color: white;
+    }
+
+    .stSelectbox > div > div {
+        background-color: #2d2f34;
+        color: white;
+    }
+
+    h1, h2, h3 {
+        color: white !important;
+    }
+
+    .upgrade-section {
+        background-color: #23252a;
+        padding: 2rem;
+        border-radius: 10px;
+        margin-top: 2rem;
+        text-align: center;
+    }
+
+    .remaining-counter {
+        background-color: #23252a;
+        padding: 1rem;
+        border-radius: 10px;
+        margin-top: 1rem;
+        color: #ff69b4;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -79,18 +105,18 @@ def generate_image(prompt, style="", width=1024, height=1024):
         data = response.json()
         image_data = base64.b64decode(data["artifacts"][0]["base64"])
         image = Image.open(io.BytesIO(image_data))
-        return image
+        return image, image_data
 
     except Exception as e:
         st.error(f"Error generating image: {str(e)}")
-        return None
+        return None, None
 
 def main():
     # Add session state for user plan and current tab
     if 'user_plan' not in st.session_state:
         st.session_state.user_plan = 'free'
         st.session_state.images_remaining = 10
-    
+
     # Create tabs for Image and Video Generation
     tab1, tab2 = st.tabs(["🖼️ Image Generation", "🎥 Video Generation"])
 
@@ -142,21 +168,18 @@ def main():
                 with st.spinner("Creating your masterpiece..."):
                     width, height = aspect_ratios[selected_ratio]
                     style_prompt = "" if selected_style == "None" else selected_style
-                    image = generate_image(prompt, style_prompt, width, height)
+                    image, image_data = generate_image(prompt, style_prompt, width, height)
                     
-                    if image:
+                    if image and image_data:
                         st.image(image, caption="Generated Image", use_column_width=True)
                         
-                        # Add download button for the image
-                        buffered = io.BytesIO()
-                        image.save(buffered, format="PNG")
-                        image_bytes = buffered.getvalue()
-                        
+                        # Add download button
                         st.download_button(
                             label="Download Image",
-                            data=image_bytes,
+                            data=image_data,
                             file_name=f"generated_image_{int(time.time())}.png",
-                            mime="image/png"
+                            mime="image/png",
+                            use_container_width=True
                         )
                         
                         if st.session_state.user_plan == 'free':
@@ -165,8 +188,8 @@ def main():
         # Display remaining generations for free users
         if st.session_state.user_plan == 'free':
             st.markdown(f"""
-                <div style='background: #23252a; padding: 1rem; border-radius: 10px; margin-top: 1rem;'>
-                    <p style='color: #888888; margin: 0;'>
+                <div class='remaining-counter'>
+                    <p style='margin: 0; text-align: center;'>
                         ⚡ {st.session_state.images_remaining} generations remaining today
                     </p>
                 </div>
@@ -177,14 +200,14 @@ def main():
 
     # Add upgrade section at the bottom
     st.markdown("""
-        <div style='background: #23252a; padding: 2rem; border-radius: 10px; margin-top: 2rem; text-align: center;'>
+        <div class='upgrade-section'>
             <h2 style='color: white; margin: 0;'>⚡ Upgrade to Pro</h2>
-            <p style='color: #888888; font-size: 1.2rem; margin: 1rem 0;'>
+            <p style='color: #ff69b4; font-size: 1.2rem; margin: 1rem 0;'>
                 Get unlimited generations and premium features
             </p>
             <div style='margin: 1rem;'>
                 <h3 style='color: #ff69b4;'>$9.99/month</h3>
-                <ul style='color: #888888; list-style: none; padding: 0;'>
+                <ul style='color: white; list-style: none; padding: 0;'>
                     <li>✨ Unlimited Generations</li>
                     <li>🚀 Instant Generation</li>
                     <li>🎨 Priority Support</li>
