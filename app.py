@@ -439,7 +439,16 @@ def generate_image(prompt, style="", width=1024, height=1024):
 
 def generate_video(image, motion_style, duration, quality, prompt=""):
     try:
-        api_key = st.secrets["STABILITY_API_KEY"]
+        # Get API key from environment variable or secrets
+        api_key = None
+        try:
+            api_key = st.secrets["STABILITY_API_KEY"]
+        except:
+            api_key = os.getenv("STABILITY_API_KEY")
+        
+        if not api_key:
+            st.error("API key not found. Please set the STABILITY_API_KEY in your secrets or environment variables.")
+            return None
         
         # Add artificial delay for free users
         if st.session_state.user_plan == 'free':
@@ -448,7 +457,7 @@ def generate_video(image, motion_style, duration, quality, prompt=""):
             
             # Simulate slower generation with progress updates
             for i in range(5):
-                time.sleep(1)
+                time.sleep(1)  # 5 second delay for free users
                 progress_bar.progress((i + 1) * 20)
             
             progress_bar.empty()
@@ -461,7 +470,7 @@ def generate_video(image, motion_style, duration, quality, prompt=""):
         image_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
 
         # Prepare the API request
-        url = "https://api.stability.ai/v1/generation/stable-video-diffusion/text-to-video"
+        url = "https://api.stability.ai/v1/generation/stable-video-diffusion/image-to-video"
         
         headers = {
             "Authorization": f"Bearer {api_key}",
@@ -508,35 +517,96 @@ def generate_video(image, motion_style, duration, quality, prompt=""):
             body["text_prompts"] = [{"text": prompt, "weight": 1}]
 
         # Make the API request
-        response = requests.post(url, headers=headers, json=body)
-        
-        if response.status_code != 200:
-            error_msg = response.text
+        try:
+            response = requests.post(url, headers=headers, json=body)
+            response.raise_for_status()  # Raise an error for bad status codes
+        except requests.exceptions.RequestException as e:
+            error_msg = str(e)
             try:
                 error_data = response.json()
                 if "message" in error_data:
                     error_msg = error_data["message"]
             except:
                 pass
-            raise Exception(f"API Error: {error_msg}")
+            raise Exception(f"Video API Error: {error_msg}")
 
         # Process and return the video
-        data = response.json()
-        if not data.get("artifacts"):
-            raise Exception("No video data received from API")
+        try:
+            data = response.json()
+            if not data.get("artifacts"):
+                raise Exception("No video data received from API")
             
-        video_data = base64.b64decode(data["artifacts"][0]["base64"])
-        
-        # Save video to a temporary file
-        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')
-        temp_file.write(video_data)
-        temp_file.close()
-        
-        return temp_file.name
+            video_data = base64.b64decode(data["artifacts"][0]["base64"])
+            
+            # Save video to a temporary file
+            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')
+            temp_file.write(video_data)
+            temp_file.close()
+            
+            # Update remaining generations for free users
+            if st.session_state.user_plan == 'free':
+                st.session_state.images_remaining -= 1
+            
+            return temp_file.name
+        except Exception as e:
+            raise Exception(f"Error processing video API response: {str(e)}")
 
     except Exception as e:
         st.error(f"Error generating video: {str(e)}")
         return None
+
+def test_video_access():
+    try:
+        api_key = None
+        try:
+            api_key = st.secrets["STABILITY_API_KEY"]
+        except:
+            api_key = os.getenv("STABILITY_API_KEY")
+        
+        if not api_key:
+            st.error("API key not found. Please set the STABILITY_API_KEY in your secrets or environment variables.")
+            return False
+
+        # First check user account info
+        url = "https://api.stability.ai/v1/user/account"
+        headers = {
+            "Authorization": f"Bearer {api_key}"
+        }
+        
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            account_data = response.json()
+            st.write("### Account Information:")
+            st.json(account_data)
+            
+            # Now check available engines
+            url = "https://api.stability.ai/v1/engines/list"
+            response = requests.get(url, headers=headers)
+            
+            if response.status_code == 200:
+                engines = response.json()
+                st.write("### Available AI Models:")
+                
+                video_engines = [engine for engine in engines if "video" in engine["id"].lower()]
+                
+                if video_engines:
+                    st.success("✅ You have access to the following video models:")
+                    for engine in video_engines:
+                        st.write(f"- {engine['name']} ({engine['id']})")
+                else:
+                    st.warning("❌ No video generation models found in your available engines. You may need to request access to Stable Video Diffusion.")
+                
+                return True
+            else:
+                st.error(f"Error checking available engines: {response.text}")
+                return False
+        else:
+            st.error(f"Error checking account: {response.text}")
+            return False
+            
+    except Exception as e:
+        st.error(f"Error checking API access: {str(e)}")
+        return False
 
 def main():
     # Add session state for user plan and current tab
@@ -742,6 +812,12 @@ def main():
         </div>
     </div>
     """, unsafe_allow_html=True)
+
+    # Add a button in the sidebar to test API access
+    with st.sidebar:
+        st.divider()
+        if st.button("Check API Access"):
+            test_video_access()
 
 if __name__ == "__main__":
     main()
