@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 import base64
 from datetime import datetime, timedelta
 import time
+import video_app
 
 # Load environment variables
 load_dotenv()
