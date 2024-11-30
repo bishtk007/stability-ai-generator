@@ -553,47 +553,20 @@ def main():
         <div class="pricing-header">
             <div class="plan-info">
                 <span class="plan-badge">Free Plan</span>
-                <span class="plan-details">{st.session_state.images_remaining} images remaining today</span>
+                <span class="plan-details">{st.session_state.images_remaining} generations remaining today</span>
             </div>
         </div>
         ''',
         unsafe_allow_html=True
     )
 
-    # Upgrade Button and Pricing
-    st.markdown(
-        '''
-        <div class="upgrade-section">
-            <button class="upgrade-button" onclick="showPricing()">
-                ⚡ Upgrade
-                <span style="font-size: 0.8rem; opacity: 0.8;">$9.99/mo</span>
-            </button>
-            <div class="pricing-popup" id="pricingPopup">
-                <div class="plan-card">
-                    <h3>Free Plan</h3>
-                    <p>Perfect for trying out</p>
-                    <div class="plan-price">$0/month</div>
-                    <p>• 10 images per day<br>• Standard generation (5s)<br>• Basic styles<br>• Basic video generation</p>
-                </div>
-                <div class="plan-card">
-                    <h3>Pro Plan</h3>
-                    <p>For serious creators</p>
-                    <div class="plan-price">$9.99/month</div>
-                    <p>• Unlimited images<br>• Instant generation<br>• All premium styles<br>• Priority support<br>• Advanced video options</p>
-                </div>
-            </div>
-        </div>
-        ''',
-        unsafe_allow_html=True
-    )
-
-    # Create tabs
+    # Create tabs for Image and Video Generation
     tab1, tab2 = st.tabs(["🖼️ Image Generation", "🎥 Video Generation"])
 
     with tab1:
         st.markdown(
             '<div class="main-prompt-container">'
-            '<h1 class="main-title">What will you create?</h1>'
+            '<h1 class="main-title">Generate Images with AI</h1>'
             '</div>',
             unsafe_allow_html=True
         )
@@ -660,13 +633,8 @@ def main():
                 st.session_state.generated_images.insert(0, {
                     'image': image,
                     'prompt': clean_prompt,
-                    'style': style_prompt,
-                    'timestamp': datetime.now()
+                    'style': style_prompt
                 })
-
-                # Update remaining generations for free users
-                if st.session_state.user_plan == 'free':
-                    st.session_state.images_remaining -= 1
 
         # Display Image Grid
         if 'generated_images' in st.session_state and st.session_state.generated_images:
@@ -685,8 +653,8 @@ def main():
             unsafe_allow_html=True
         )
 
-        # Image upload
-        uploaded_file = st.file_uploader("Upload an image", type=['png', 'jpg', 'jpeg'], key="video_image")
+        # Video generation UI
+        uploaded_file = st.file_uploader("Upload an image to animate", type=['png', 'jpg', 'jpeg'], key="video_image")
         
         if uploaded_file:
             # Display uploaded image
@@ -694,31 +662,31 @@ def main():
             st.image(image, caption="Uploaded Image", use_column_width=True)
 
             # Motion options
-            st.markdown('<p class="option-label">Motion Style</p>', unsafe_allow_html=True)
-            motion_styles = [
-                "Gentle Movement",
-                "Zoom In",
-                "Zoom Out",
-                "Pan Left to Right",
-                "Pan Right to Left",
-                "Rotate Clockwise",
-                "Rotate Counter-clockwise"
-            ]
-            selected_motion = st.selectbox("", motion_styles, label_visibility="collapsed", key="motion_style")
-
-            # Video settings
             col1, col2 = st.columns(2)
             with col1:
-                st.markdown('<p class="option-label">Duration (seconds)</p>', unsafe_allow_html=True)
-                duration = st.slider("", 1, 10, 3, label_visibility="collapsed", key="video_duration")
-            
+                st.markdown('<p class="option-label">Motion Style</p>', unsafe_allow_html=True)
+                motion_styles = [
+                    "Gentle Movement",
+                    "Zoom In",
+                    "Zoom Out",
+                    "Pan Left to Right",
+                    "Pan Right to Left",
+                    "Rotate Clockwise",
+                    "Rotate Counter-clockwise"
+                ]
+                selected_motion = st.selectbox("", motion_styles, label_visibility="collapsed", key="motion_style")
+
             with col2:
                 st.markdown('<p class="option-label">Quality</p>', unsafe_allow_html=True)
                 quality_options = ["Standard", "High", "Ultra"]
                 quality = st.selectbox("", quality_options, label_visibility="collapsed", key="video_quality")
 
-            # Additional prompt for video context
-            video_prompt = st.text_input(
+            # Duration slider
+            st.markdown('<p class="option-label">Duration (seconds)</p>', unsafe_allow_html=True)
+            duration = st.slider("", 1, 10, 3, label_visibility="collapsed", key="video_duration")
+
+            # Optional context prompt
+            context_prompt = st.text_input(
                 "",
                 placeholder="Add context for video generation (optional)",
                 label_visibility="collapsed",
@@ -737,7 +705,7 @@ def main():
                         motion_style=selected_motion,
                         duration=duration,
                         quality=quality,
-                        prompt=video_prompt
+                        prompt=context_prompt
                     )
                     
                     if video_path:
@@ -753,6 +721,27 @@ def main():
                         # Update remaining generations for free users
                         if st.session_state.user_plan == 'free':
                             st.session_state.images_remaining -= 1
+
+    # Add upgrade section at the bottom
+    st.markdown("""
+    <div style="text-align: center; margin-top: 2rem; padding: 2rem; background: linear-gradient(to right, #1a1a1a, #2a2a2a); border-radius: 10px;">
+        <h2>⚡ Upgrade to Pro</h2>
+        <p style="font-size: 1.2rem; margin: 1rem 0;">Get unlimited generations and premium features</p>
+        <div style="display: inline-block; margin: 1rem; padding: 1.5rem; background: rgba(255, 255, 255, 0.1); border-radius: 10px;">
+            <h3 style="color: #ff0080;">$9.99/month</h3>
+            <ul style="list-style-type: none; padding: 0; text-align: left;">
+                <li>✨ Unlimited generations</li>
+                <li>⚡ Instant generation</li>
+                <li>🎨 All premium styles</li>
+                <li>🎥 Advanced video options</li>
+                <li>🔥 Priority support</li>
+            </ul>
+            <button style="background: #ff0080; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 5px; font-size: 1.1rem; cursor: pointer; margin-top: 1rem;">
+                Upgrade Now
+            </button>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
