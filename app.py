@@ -350,8 +350,16 @@ st.markdown("""
 
 def generate_image(prompt, style="", width=1024, height=1024):
     try:
-        # Get API key from environment variable
-        api_key = st.secrets["STABILITY_API_KEY"]
+        # Get API key from environment variable or secrets
+        api_key = None
+        try:
+            api_key = st.secrets["STABILITY_API_KEY"]
+        except:
+            api_key = os.getenv("STABILITY_API_KEY")
+        
+        if not api_key:
+            st.error("API key not found. Please set the STABILITY_API_KEY in your secrets or environment variables.")
+            return None
         
         # Add artificial delay for free users
         if st.session_state.user_plan == 'free':
@@ -383,7 +391,7 @@ def generate_image(prompt, style="", width=1024, height=1024):
             "steps": 30,
             "width": width,
             "height": height,
-            "seed": 0,
+            "seed": random.randint(1, 1000000),  # Random seed for variety
             "cfg_scale": 7,
             "samples": 1,
             "text_prompts": [
@@ -395,21 +403,35 @@ def generate_image(prompt, style="", width=1024, height=1024):
         }
 
         # Make the API request
-        response = requests.post(url, headers=headers, json=body)
-        
-        if response.status_code != 200:
-            raise Exception(f"Non-200 response: {response.text}")
+        try:
+            response = requests.post(url, headers=headers, json=body)
+            response.raise_for_status()  # Raise an error for bad status codes
+        except requests.exceptions.RequestException as e:
+            error_msg = str(e)
+            try:
+                error_data = response.json()
+                if "message" in error_data:
+                    error_msg = error_data["message"]
+            except:
+                pass
+            raise Exception(f"API Error: {error_msg}")
 
         # Process and return the image
-        data = response.json()
-        image_data = base64.b64decode(data["artifacts"][0]["base64"])
-        image = Image.open(io.BytesIO(image_data))
-        
-        # Update remaining images for free users
-        if st.session_state.user_plan == 'free':
-            st.session_state.images_remaining -= 1
-        
-        return image
+        try:
+            data = response.json()
+            if not data.get("artifacts"):
+                raise Exception("No image data received from API")
+            
+            image_data = base64.b64decode(data["artifacts"][0]["base64"])
+            image = Image.open(io.BytesIO(image_data))
+            
+            # Update remaining images for free users
+            if st.session_state.user_plan == 'free':
+                st.session_state.images_remaining -= 1
+            
+            return image
+        except Exception as e:
+            raise Exception(f"Error processing API response: {str(e)}")
 
     except Exception as e:
         st.error(f"Error generating image: {str(e)}")
@@ -565,11 +587,10 @@ def main():
         unsafe_allow_html=True
     )
 
-    # Add tabs for Image and Video
+    # Create tabs
     tab1, tab2 = st.tabs(["🖼️ Image Generation", "🎥 Video Generation"])
 
     with tab1:
-        # Original image generation code
         st.markdown(
             '<div class="main-prompt-container">'
             '<h1 class="main-title">What will you create?</h1>'
@@ -577,9 +598,8 @@ def main():
             unsafe_allow_html=True
         )
 
-        # Create two columns for search and button
+        # Image generation UI
         col1, col2 = st.columns([5, 1])
-        
         with col1:
             prompt = st.text_input(
                 "",
@@ -587,29 +607,16 @@ def main():
                 label_visibility="collapsed",
                 key="image_prompt"
             )
-        
         with col2:
             generate_button = st.button("Generate", type="primary", use_container_width=True, key="image_generate")
 
         # Style and Aspect Ratio Options
         col1, col2 = st.columns(2)
-        
         with col1:
             st.markdown('<p class="option-label">Style</p>', unsafe_allow_html=True)
-            styles = [
-                "None",
-                "Photorealistic",
-                "Digital Art",
-                "Cinematic",
-                "Anime",
-                "Oil Painting",
-                "Watercolor",
-                "3D Render",
-                "Comic Book",
-                "Fantasy Art"
-            ]
+            styles = ["None", "Photorealistic", "Cinematic", "Anime", "Digital Art", "Fantasy"]
             selected_style = st.selectbox("", styles, label_visibility="collapsed", key="image_style")
-        
+
         with col2:
             st.markdown('<p class="option-label">Aspect Ratio</p>', unsafe_allow_html=True)
             aspect_ratios = {
@@ -629,14 +636,14 @@ def main():
             if st.session_state.user_plan == 'free' and st.session_state.images_remaining <= 0:
                 st.warning("⚡ You've used all your free images for today! Upgrade to Pro for unlimited generations.")
                 return
-                
+
             width, height = aspect_ratios[selected_ratio]
             clean_prompt = prompt.strip()
             
             if not clean_prompt:
                 st.warning("Please enter a valid prompt!")
                 return
-                
+            
             style_prompt = selected_style if selected_style and selected_style != "None" else ""
             
             image = generate_image(
@@ -645,6 +652,21 @@ def main():
                 width=width,
                 height=height
             )
+
+            if image:
+                # Add to session state
+                if 'generated_images' not in st.session_state:
+                    st.session_state.generated_images = []
+                st.session_state.generated_images.insert(0, {
+                    'image': image,
+                    'prompt': clean_prompt,
+                    'style': style_prompt,
+                    'timestamp': datetime.now()
+                })
+
+                # Update remaining generations for free users
+                if st.session_state.user_plan == 'free':
+                    st.session_state.images_remaining -= 1
 
         # Display Image Grid
         if 'generated_images' in st.session_state and st.session_state.generated_images:
