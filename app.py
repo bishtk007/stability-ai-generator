@@ -414,6 +414,11 @@ def generate_image(prompt, style="", width=1024, height=1024):
         st.error(f"Error generating image: {str(e)}")
         return None
 
+def create_tabs():
+    # Create tabs for Image and Video Generation
+    tab1, tab2 = st.tabs(["🖼️ Image Generation", "🎥 Video Generation"])
+    return tab1, tab2
+
 def main():
     # Add session state for user plan
     if 'user_plan' not in st.session_state:
@@ -466,121 +471,117 @@ def main():
         unsafe_allow_html=True
     )
 
-    # Main Search Container
-    st.markdown(
-        '<div class="main-prompt-container">'
-        '<h1 class="main-title">What will you create?</h1>'
-        '</div>',
-        unsafe_allow_html=True
-    )
+    # Create tabs
+    image_tab, video_tab = create_tabs()
 
-    # Create two columns for search and button
-    col1, col2 = st.columns([5, 1])
-    
-    with col1:
-        prompt = st.text_input(
-            "",
-            placeholder="Describe what you want to see",
-            label_visibility="collapsed"
-        )
-    
-    with col2:
-        generate_button = st.button("Generate", type="primary", use_container_width=True)
-
-    # Style and Aspect Ratio Options
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown('<p class="option-label">Style</p>', unsafe_allow_html=True)
-        styles = [
-            "None",
-            "Photorealistic",
-            "Digital Art",
-            "Cinematic",
-            "Anime",
-            "Oil Painting",
-            "Watercolor",
-            "3D Render",
-            "Comic Book",
-            "Fantasy Art"
-        ]
-        selected_style = st.selectbox("", styles, label_visibility="collapsed")
-    
-    with col2:
-        st.markdown('<p class="option-label">Aspect Ratio</p>', unsafe_allow_html=True)
-        aspect_ratios = {
-            "1:1 Square": (1024, 1024),
-            "16:9 Landscape": (1024, 576),
-            "9:16 Portrait": (576, 1024)
-        }
-        selected_ratio = st.selectbox(
-            "",
-            list(aspect_ratios.keys()),
-            label_visibility="collapsed"
-        )
-
-    # Section Divider
-    st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
-
-    # Navigation moved down
-    st.markdown(
-        '<div class="nav-container">'
-        '<a href="#" class="nav-item active">🔍 Explore</a>'
-        '<a href="#" class="nav-item">👥 Following</a>'
-        '<a href="#" class="nav-item">🔥 Top</a>'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-    # Handle image generation
-    if generate_button and prompt:
-        if st.session_state.user_plan == 'free' and st.session_state.images_remaining <= 0:
-            st.warning("⚡ You've used all your free images for today! Upgrade to Pro for unlimited generations.")
-            return
-            
-        # Get the selected ratio dimensions
-        width, height = aspect_ratios[selected_ratio]
-        
-        # Clean the prompt and add style
-        clean_prompt = prompt.strip()
-        if not clean_prompt:
-            st.warning("Please enter a valid prompt!")
-            return
-            
-        style_prompt = selected_style if selected_style and selected_style != "None" else ""
-        
-        image = generate_image(
-            prompt=clean_prompt,
-            style=style_prompt,
-            width=width,
-            height=height
-        )
-        
-        if image:
-            if 'generated_images' not in st.session_state:
-                st.session_state.generated_images = []
-            st.session_state.generated_images.insert(0, {
-                'image': image,
-                'prompt': clean_prompt,
-                'style': selected_style,
-                'timestamp': datetime.now()
-            })
-
-    # Display Image Grid
-    if 'generated_images' in st.session_state and st.session_state.generated_images:
-        st.markdown('<div class="image-grid">', unsafe_allow_html=True)
-        cols = st.columns(3)
-        for idx, img_data in enumerate(st.session_state.generated_images):
-            with cols[idx % 3]:
-                st.image(img_data['image'], use_column_width=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-    else:
+    # Image Generation Tab
+    with image_tab:
+        # Main Search Container
         st.markdown(
-            '<div class="image-grid">'
-            '<div class="image-card">Sample images will appear here</div>'
+            '<div class="main-prompt-container">'
+            '<h1 class="main-title">What will you create?</h1>'
             '</div>',
             unsafe_allow_html=True
         )
+
+        # Create two columns for search and button
+        col1, col2 = st.columns([5, 1])
+        
+        with col1:
+            prompt = st.text_input(
+                "",
+                placeholder="Describe what you want to see",
+                label_visibility="collapsed"
+            )
+        
+        with col2:
+            generate_button = st.button("Generate", type="primary", use_container_width=True)
+
+        # Style and Aspect Ratio Options
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown('<p class="option-label">Style</p>', unsafe_allow_html=True)
+            styles = [
+                "None",
+                "Photorealistic",
+                "Digital Art",
+                "Cinematic",
+                "Anime",
+                "Oil Painting",
+                "Watercolor",
+                "3D Render",
+                "Comic Book",
+                "Fantasy Art"
+            ]
+            selected_style = st.selectbox("", styles, label_visibility="collapsed")
+        
+        with col2:
+            st.markdown('<p class="option-label">Aspect Ratio</p>', unsafe_allow_html=True)
+            aspect_ratios = {
+                "1:1 Square": (1024, 1024),
+                "16:9 Landscape": (1024, 576),
+                "9:16 Portrait": (576, 1024)
+            }
+            selected_ratio = st.selectbox(
+                "",
+                list(aspect_ratios.keys()),
+                label_visibility="collapsed"
+            )
+
+        # Handle image generation
+        if generate_button and prompt:
+            if st.session_state.user_plan == 'free' and st.session_state.images_remaining <= 0:
+                st.warning("⚡ You've used all your free images for today! Upgrade to Pro for unlimited generations.")
+                return
+                
+            # Get the selected ratio dimensions
+            width, height = aspect_ratios[selected_ratio]
+            
+            # Clean the prompt and add style
+            clean_prompt = prompt.strip()
+            if not clean_prompt:
+                st.warning("Please enter a valid prompt!")
+                return
+                
+            style_prompt = selected_style if selected_style and selected_style != "None" else ""
+            
+            image = generate_image(
+                prompt=clean_prompt,
+                style=style_prompt,
+                width=width,
+                height=height
+            )
+            
+            if image:
+                if 'generated_images' not in st.session_state:
+                    st.session_state.generated_images = []
+                st.session_state.generated_images.insert(0, {
+                    'image': image,
+                    'prompt': clean_prompt,
+                    'style': selected_style,
+                    'timestamp': datetime.now()
+                })
+
+        # Display Image Grid
+        if 'generated_images' in st.session_state and st.session_state.generated_images:
+            st.markdown('<div class="image-grid">', unsafe_allow_html=True)
+            cols = st.columns(3)
+            for idx, img_data in enumerate(st.session_state.generated_images):
+                with cols[idx % 3]:
+                    st.image(img_data['image'], use_column_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+        else:
+            st.markdown(
+                '<div class="image-grid">'
+                '<div class="image-card">Sample images will appear here</div>'
+                '</div>',
+                unsafe_allow_html=True
+            )
+
+    # Video Generation Tab
+    with video_tab:
+        video_app.video_generation_ui()
 
 if __name__ == "__main__":
     main()
