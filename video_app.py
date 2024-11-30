@@ -6,7 +6,6 @@ import os
 import base64
 import tempfile
 import time
-from moviepy.editor import VideoFileClip
 
 def video_generation_ui():
     # Custom CSS for modern dark theme
@@ -112,9 +111,62 @@ def video_generation_ui():
 
             # Generate button
             if st.button("Generate Video", type="primary", use_container_width=True):
+                if st.session_state.user_plan == 'free' and st.session_state.images_remaining <= 0:
+                    st.warning("⚡ You've used all your free generations today! Upgrade to Pro for unlimited generations.")
+                    return
+
                 with st.spinner("Creating your video..."):
-                    # Your existing video generation code here
-                    pass
+                    try:
+                        # Convert image to base64
+                        buffered = io.BytesIO()
+                        image.save(buffered, format="PNG")
+                        image_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
+
+                        # Get API key from environment variable
+                        api_key = st.secrets["STABILITY_API_KEY"]
+                        
+                        url = "https://api.stability.ai/v1/generation/stable-video-diffusion/image-to-video"
+                        
+                        headers = {
+                            "Authorization": f"Bearer {api_key}",
+                            "Content-Type": "application/json",
+                            "Accept": "application/json"
+                        }
+
+                        body = {
+                            "image": image_base64,
+                            "seed": 0,
+                            "cfg_scale": 2.5,
+                            "motion_bucket_id": 127
+                        }
+
+                        response = requests.post(url, headers=headers, json=body)
+                        
+                        if response.status_code == 200:
+                            result = response.json()
+                            
+                            # Save and display the video
+                            with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as tmp_file:
+                                video_data = base64.b64decode(result['videos'][0])
+                                tmp_file.write(video_data)
+                                st.video(tmp_file.name)
+                                
+                                # Download button
+                                st.download_button(
+                                    label="Download Video",
+                                    data=video_data,
+                                    file_name="generated_video.mp4",
+                                    mime="video/mp4"
+                                )
+                                
+                            # Update remaining generations for free users
+                            if st.session_state.user_plan == 'free':
+                                st.session_state.images_remaining -= 1
+                        else:
+                            st.error(f"Error: {response.text}")
+
+                    except Exception as e:
+                        st.error(f"Error generating video: {str(e)}")
 
         else:
             # Placeholder when no image is uploaded
@@ -139,4 +191,7 @@ if __name__ == "__main__":
         layout="wide",
         initial_sidebar_state="collapsed"
     )
+    if 'user_plan' not in st.session_state:
+        st.session_state.user_plan = 'free'
+        st.session_state.images_remaining = 10
     video_generation_ui()
