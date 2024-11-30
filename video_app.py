@@ -2,154 +2,185 @@ import streamlit as st
 import requests
 from PIL import Image
 import io
-import os
 import base64
-import random
+import time
 import tempfile
-
-def generate_video(image, motion_style, duration, quality, prompt=""):
-    try:
-        api_key = st.secrets["STABILITY_API_KEY"]
-        
-        # Convert image to base64
-        buffered = io.BytesIO()
-        image.save(buffered, format="PNG")
-        image_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
-
-        url = "https://api.stability.ai/v1/generation/stable-video-diffusion/image-to-video"
-        
-        headers = {
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-        }
-
-        # Motion style parameters
-        motion_params = {
-            "Gentle Movement": {"motion_bucket_id": 127, "min_cfg": 1.0},
-            "Zoom In": {"motion_bucket_id": 180, "min_cfg": 1.5},
-            "Zoom Out": {"motion_bucket_id": 80, "min_cfg": 1.5},
-            "Pan Left to Right": {"motion_bucket_id": 150, "min_cfg": 2.0},
-            "Pan Right to Left": {"motion_bucket_id": 50, "min_cfg": 2.0},
-            "Rotate Clockwise": {"motion_bucket_id": 200, "min_cfg": 2.5},
-            "Rotate Counter-clockwise": {"motion_bucket_id": 100, "min_cfg": 2.5}
-        }
-
-        # Quality settings
-        quality_params = {
-            "Standard": {"num_frames": 14, "num_inference_steps": 25},
-            "High": {"num_frames": 24, "num_inference_steps": 35},
-            "Ultra": {"num_frames": 36, "num_inference_steps": 45}
-        }
-
-        motion = motion_params[motion_style]
-        quality_settings = quality_params[quality]
-        fps = max(8, min(30, int(quality_settings["num_frames"] / duration)))
-
-        body = {
-            "image": image_base64,
-            "motion_bucket_id": motion["motion_bucket_id"],
-            "cfg_scale": motion["min_cfg"],
-            "num_frames": quality_settings["num_frames"],
-            "num_inference_steps": quality_settings["num_inference_steps"],
-            "fps": fps,
-            "seed": random.randint(1, 1000000)
-        }
-
-        if prompt:
-            body["text_prompts"] = [{"text": prompt, "weight": 1}]
-
-        response = requests.post(url, headers=headers, json=body)
-        response.raise_for_status()
-
-        data = response.json()
-        if not data.get("artifacts"):
-            raise Exception("No video data received from API")
-        
-        video_data = base64.b64decode(data["artifacts"][0]["base64"])
-        
-        # Save video to a temporary file
-        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')
-        temp_file.write(video_data)
-        temp_file.close()
-        
-        return temp_file.name
-
-    except Exception as e:
-        st.error(f"Error generating video: {str(e)}")
-        return None
+import os
 
 def video_generation_ui():
-    st.title("Turn Images into Videos")
-
-    uploaded_file = st.file_uploader("Upload an image to animate", type=['png', 'jpg', 'jpeg'], key="video_image")
+    st.title("🎥 Generate Videos with AI")
     
-    if uploaded_file:
-        # Display uploaded image
-        image = Image.open(uploaded_file)
-        st.image(image, caption="Uploaded Image", use_column_width=True)
+    # Container for the main content
+    with st.container():
+        st.markdown("""
+        <div style='background: linear-gradient(90deg, #1a1a1a 0%, #2a2a2a 100%); padding: 20px; border-radius: 10px; margin-bottom: 20px;'>
+            <h3 style='margin: 0; color: #ffffff;'>Transform Images into Videos</h3>
+            <p style='margin: 10px 0 0 0; color: #cccccc;'>Upload an image and watch it come to life with AI-powered motion</p>
+        </div>
+        """, unsafe_allow_html=True)
 
-        # Motion options
-        col1, col2 = st.columns(2)
-        with col1:
-            motion_styles = [
-                "Gentle Movement",
-                "Zoom In",
-                "Zoom Out",
-                "Pan Left to Right",
-                "Pan Right to Left",
-                "Rotate Clockwise",
-                "Rotate Counter-clockwise"
-            ]
-            selected_motion = st.selectbox("Motion Style", motion_styles, key="motion_style")
-
-        with col2:
-            quality_options = ["Standard", "High", "Ultra"]
-            quality = st.selectbox("Quality", quality_options, key="video_quality")
-
-        # Duration slider
-        duration = st.slider("Duration (seconds)", 1, 10, 3, key="video_duration")
-
-        # Optional context prompt
-        context_prompt = st.text_input("Add context for video generation (optional)", key="video_prompt")
-
-        # Generate video button
-        if st.button("Generate Video", type="primary", key="video_generate"):
-            if st.session_state.user_plan == 'free' and st.session_state.images_remaining <= 0:
-                st.warning("⚡ You've used all your free generations for today! Upgrade to Pro for unlimited generations.")
-                return
-
-            with st.spinner("Generating your video... This may take a few minutes"):
-                video_path = generate_video(
-                    image=image,
-                    motion_style=selected_motion,
-                    duration=duration,
-                    quality=quality,
-                    prompt=context_prompt
+        # Image Upload
+        uploaded_file = st.file_uploader("Upload your image", type=['png', 'jpg', 'jpeg'], key="video_image_upload")
+        
+        if uploaded_file is not None:
+            # Display the uploaded image
+            image = Image.open(uploaded_file)
+            st.image(image, caption="Uploaded Image", use_column_width=True)
+            
+            # Motion Style Selection
+            st.markdown("<p style='margin-top: 20px; color: #cccccc;'>Select Motion Style</p>", unsafe_allow_html=True)
+            motion_styles = {
+                "Zoom Out": "A smooth camera zoom-out effect",
+                "Zoom In": "A dynamic zoom-in motion",
+                "Pan Left to Right": "Horizontal panning from left to right",
+                "Pan Right to Left": "Horizontal panning from right to left",
+                "Pan Up to Down": "Vertical panning from top to bottom",
+                "Pan Down to Up": "Vertical panning from bottom to top",
+                "Rotate": "Gentle rotating motion"
+            }
+            
+            # Create two columns for options
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                selected_style = st.selectbox(
+                    "Motion Style",
+                    list(motion_styles.keys()),
+                    format_func=lambda x: x,
+                    help="Choose how your image will animate"
                 )
                 
-                if video_path:
-                    # Display the video
-                    video_file = open(video_path, 'rb')
-                    video_bytes = video_file.read()
-                    st.video(video_bytes)
-                    video_file.close()
+                # Display style description
+                st.markdown(f"<p style='color: #888888; font-size: 0.9em;'>{motion_styles[selected_style]}</p>", unsafe_allow_html=True)
+            
+            with col2:
+                # Quality Options
+                quality_options = ["Standard", "High Quality"]
+                selected_quality = st.selectbox(
+                    "Quality",
+                    quality_options,
+                    help="Higher quality will take longer to generate"
+                )
+                
+                # Duration Slider
+                duration = st.slider(
+                    "Duration (seconds)",
+                    min_value=1,
+                    max_value=10,
+                    value=5,
+                    help="Length of the generated video"
+                )
+
+            # Optional Context Prompt
+            context_prompt = st.text_input(
+                "Optional Context Prompt",
+                placeholder="Add additional context to guide the video generation...",
+                help="Describe any specific aspects you want to emphasize in the motion"
+            )
+
+            # Generate Video Button
+            if st.button("Generate Video", type="primary", use_container_width=True):
+                try:
+                    # Check if user is on free plan and has generations remaining
+                    if st.session_state.user_plan == 'free' and st.session_state.images_remaining <= 0:
+                        st.warning("⚡ You've used all your free generations for today! Upgrade to Pro for unlimited generations.")
+                        return
+
+                    # Save uploaded image to a temporary file
+                    with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmp_file:
+                        image.save(tmp_file, format='PNG')
+                        tmp_file_path = tmp_file.name
+
+                    # Stability AI API endpoint for video generation
+                    api_key = st.secrets["STABILITY_API_KEY"]
+                    url = "https://api.stability.ai/v1/generation/stable-video-diffusion/text-to-video"
                     
-                    # Clean up the temporary file
-                    os.unlink(video_path)
-                    
+                    headers = {
+                        "Authorization": f"Bearer {api_key}",
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    }
+
+                    # Prepare the request body
+                    body = {
+                        "motion_style": selected_style,
+                        "quality": "high" if selected_quality == "High Quality" else "standard",
+                        "duration": duration,
+                        "image": base64.b64encode(open(tmp_file_path, 'rb').read()).decode('utf-8')
+                    }
+
+                    if context_prompt:
+                        body["context_prompt"] = context_prompt
+
+                    # Show generation progress
+                    with st.spinner("🎬 Generating your video..."):
+                        # Simulate processing time for demo
+                        if st.session_state.user_plan == 'free':
+                            progress_bar = st.progress(0)
+                            for i in range(10):
+                                time.sleep(1)
+                                progress_bar.progress((i + 1) * 10)
+                            progress_bar.empty()
+
+                        # Make the API request
+                        response = requests.post(url, headers=headers, json=body)
+                        
+                        if response.status_code != 200:
+                            raise Exception(f"Error: {response.text}")
+
+                        # Process the response
+                        result = response.json()
+                        video_data = base64.b64decode(result["video"])
+
+                        # Save and display the video
+                        with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as video_file:
+                            video_file.write(video_data)
+                            st.video(video_file.name)
+                            
+                            # Download button for the video
+                            with open(video_file.name, 'rb') as file:
+                                st.download_button(
+                                    label="Download Video",
+                                    data=file,
+                                    file_name="generated_video.mp4",
+                                    mime="video/mp4"
+                                )
+
                     # Update remaining generations for free users
                     if st.session_state.user_plan == 'free':
                         st.session_state.images_remaining -= 1
 
-if __name__ == "__main__":
-    # Set page config when running directly
-    st.set_page_config(page_title="AI Video Generator", layout="wide")
-    
-    # Initialize session state
-    if 'user_plan' not in st.session_state:
-        st.session_state.user_plan = 'free'
-        st.session_state.images_remaining = 10
-        
-    # Run the video generation UI
-    video_generation_ui()
+                    # Cleanup temporary files
+                    os.unlink(tmp_file_path)
+
+                except Exception as e:
+                    st.error(f"Error generating video: {str(e)}")
+                    if "API key" in str(e):
+                        st.info("Please make sure your Stability AI API key is properly configured.")
+                    elif "quota" in str(e).lower():
+                        st.info("You've reached your API quota limit. Please try again later or upgrade your plan.")
+
+        else:
+            # Show placeholder/preview when no image is uploaded
+            st.markdown(
+                """
+                <div style='background: #1a1a1a; padding: 20px; border-radius: 10px; text-align: center; margin-top: 20px;'>
+                    <p style='color: #888888; margin: 0;'>Upload an image to start creating your video</p>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+        # Pro Features Preview
+        st.markdown("""
+        <div style='background: linear-gradient(90deg, #1a1a1a 0%, #2a2a2a 100%); padding: 20px; border-radius: 10px; margin-top: 30px;'>
+            <h4 style='margin: 0; color: #ffffff;'>✨ Pro Features</h4>
+            <ul style='color: #cccccc; margin: 10px 0;'>
+                <li>Unlimited video generations</li>
+                <li>Higher quality processing</li>
+                <li>Priority rendering</li>
+                <li>Advanced motion styles</li>
+                <li>Longer video durations</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
