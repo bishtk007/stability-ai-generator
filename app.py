@@ -1,6 +1,6 @@
 import streamlit as st
 import requests
-from PIL import Image
+from PIL import Image, ImageEnhance
 import io
 import os
 import base64
@@ -84,12 +84,7 @@ def generate_image(prompt, style="", width=1024, height=1024):
             "samples": 1,
             "steps": 50,  # Increased for better quality
             "style_preset": "enhance",
-            "sampler": "DPM++ 2M Karras",  # Better sampler for details
-            "clip_guidance_preset": "FAST_BLUE",
-            "image_parameters": {
-                "noise_level": 20,
-                "image_format": "png"
-            }
+            "sampler": "K_DPM_2_ANCESTRAL",  # Using a supported sampler
         }
 
         response = requests.post(url, headers=headers, json=body)
