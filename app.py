@@ -28,271 +28,9 @@ st.markdown("""
         cursor: pointer;
         box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
     }
-    
-    /* Pricing cards */
-    .pricing-container {
-        display: flex;
-        justify-content: space-around;
-        padding: 20px;
-        gap: 20px;
-        flex-wrap: wrap;
-    }
-    
-    .pricing-card {
-        background: linear-gradient(145deg, #1a1c23, #2d2f34);
-        border-radius: 20px;
-        padding: 30px;
-        width: 320px;
-        text-align: center;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-        transition: transform 0.3s ease;
-        border: 1px solid #3f3f46;
-    }
-    
-    .pricing-card:hover {
-        transform: translateY(-5px);
-    }
-    
-    .pricing-card.popular {
-        border: 2px solid #6366f1;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .popular-badge {
-        position: absolute;
-        top: 20px;
-        right: -35px;
-        background: #6366f1;
-        color: white;
-        padding: 8px 40px;
-        transform: rotate(45deg);
-        font-size: 14px;
-    }
-    
-    .plan-name {
-        color: #e4e4e7;
-        font-size: 24px;
-        font-weight: bold;
-        margin-bottom: 10px;
-    }
-    
-    .price {
-        font-size: 36px;
-        color: #6366f1;
-        margin: 20px 0;
-        font-weight: bold;
-    }
-    
-    .price span {
-        font-size: 16px;
-        color: #a1a1aa;
-    }
-    
-    .feature-list {
-        list-style: none;
-        padding: 0;
-        margin: 20px 0;
-        color: #e4e4e7;
-        text-align: left;
-    }
-    
-    .feature-list li {
-        margin: 15px 0;
-        padding-left: 25px;
-        position: relative;
-    }
-    
-    .feature-list li:before {
-        content: "✓";
-        position: absolute;
-        left: 0;
-        color: #6366f1;
-    }
-    
-    .buy-button {
-        background: linear-gradient(90deg, #6366f1, #8b5cf6);
-        color: white;
-        padding: 12px 30px;
-        border-radius: 25px;
-        text-decoration: none;
-        display: inline-block;
-        margin-top: 20px;
-        font-weight: bold;
-        transition: transform 0.2s ease;
-        border: none;
-        cursor: pointer;
-    }
-    
-    .buy-button:hover {
-        transform: scale(1.05);
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-    }
-
-    .generation-type {
-        color: #8b5cf6;
-        font-size: 14px;
-        margin-top: 10px;
-        font-weight: bold;
-    }
     </style>
 """, unsafe_allow_html=True)
 
-def show_pricing_modal():
-    # Custom CSS for better styling
-    st.markdown("""
-        <style>
-        .pricing-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            padding: 20px;
-        }
-        .price-card {
-            background: linear-gradient(145deg, #1a1c23, #2d2f34);
-            border-radius: 15px;
-            padding: 25px;
-            text-align: center;
-            color: white;
-            position: relative;
-            border: 1px solid #3f3f46;
-        }
-        .price-card.popular {
-            border: 2px solid #6366f1;
-        }
-        .popular-badge {
-            background: #6366f1;
-            color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            position: absolute;
-            top: -12px;
-            right: 20px;
-            font-size: 12px;
-        }
-        .plan-name {
-            font-size: 24px;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-        .price {
-            font-size: 36px;
-            color: #6366f1;
-            margin: 15px 0;
-        }
-        .price span {
-            font-size: 16px;
-            color: #a1a1aa;
-        }
-        .features {
-            text-align: left;
-            margin: 20px 0;
-            list-style-type: none;
-            padding: 0;
-        }
-        .features li {
-            margin: 10px 0;
-            padding-left: 25px;
-            position: relative;
-        }
-        .features li:before {
-            content: "✓";
-            color: #6366f1;
-            position: absolute;
-            left: 0;
-        }
-        .generation-type {
-            color: #8b5cf6;
-            font-size: 14px;
-            margin: 10px 0;
-        }
-        </style>
-    """, unsafe_allow_html=True)
-
-    # Pricing Grid
-    st.markdown("""
-        <div class="pricing-grid">
-            <!-- Basic Plan -->
-            <div class="price-card">
-                <div class="plan-name">Basic</div>
-                <div class="price">$9.99<span>/mo</span></div>
-                <div class="generation-type">Image & Video Generation</div>
-                <ul class="features">
-                    <li>100 Image Generations/month</li>
-                    <li>50 Video Generations/month</li>
-                    <li>Standard Quality Output</li>
-                    <li>Basic Image Styles</li>
-                    <li>1080p Video Resolution</li>
-                    <li>Email Support</li>
-                </ul>
-            </div>
-
-            <!-- Pro Plan -->
-            <div class="price-card popular">
-                <div class="popular-badge">MOST POPULAR</div>
-                <div class="plan-name">Pro</div>
-                <div class="price">$19.99<span>/mo</span></div>
-                <div class="generation-type">Advanced Creation Suite</div>
-                <ul class="features">
-                    <li>500 Image Generations/month</li>
-                    <li>200 Video Generations/month</li>
-                    <li>HD Quality Output</li>
-                    <li>All Image Styles</li>
-                    <li>4K Video Resolution</li>
-                    <li>Priority Processing</li>
-                    <li>Advanced Motion Controls</li>
-                    <li>Priority Support</li>
-                </ul>
-            </div>
-
-            <!-- Business Plan -->
-            <div class="price-card">
-                <div class="plan-name">Business</div>
-                <div class="price">$49.99<span>/mo</span></div>
-                <div class="generation-type">Professional Solution</div>
-                <ul class="features">
-                    <li>2000 Image Generations/month</li>
-                    <li>1000 Video Generations/month</li>
-                    <li>Ultra HD Quality</li>
-                    <li>Custom Style Training</li>
-                    <li>8K Video Resolution</li>
-                    <li>Instant Processing</li>
-                    <li>API Access</li>
-                    <li>Custom Branding</li>
-                    <li>Dedicated Support</li>
-                </ul>
-            </div>
-
-            <!-- Enterprise Plan -->
-            <div class="price-card">
-                <div class="plan-name">Enterprise</div>
-                <div class="price">$199.99<span>/mo</span></div>
-                <div class="generation-type">Enterprise Solution</div>
-                <ul class="features">
-                    <li>Unlimited Generations</li>
-                    <li>Maximum Quality Settings</li>
-                    <li>White-label Solution</li>
-                    <li>Custom API Integration</li>
-                    <li>Custom Model Training</li>
-                    <li>24/7 Premium Support</li>
-                    <li>SLA Guarantee</li>
-                    <li>Custom Features</li>
-                </ul>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
-
-    # Add buttons below each plan using Streamlit columns
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        st.button("Get Started", key="basic_btn", use_container_width=True)
-    with col2:
-        st.button("Upgrade Now", key="pro_btn", type="primary", use_container_width=True)
-    with col3:
-        st.button("Get Business", key="business_btn", use_container_width=True)
-    with col4:
-        st.button("Contact Sales", key="enterprise_btn", use_container_width=True)
-        
 def generate_image(prompt, style="", width=1024, height=1024):
     try:
         api_key = st.secrets["STABILITY_API_KEY"]
@@ -325,6 +63,93 @@ def generate_image(prompt, style="", width=1024, height=1024):
     except Exception as e:
         st.error(f"Error generating image: {str(e)}")
         return None, None
+
+def show_pricing_modal():
+    # Create a container for the pricing cards
+    pricing_container = st.container()
+    
+    # Create columns for the pricing cards
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        st.markdown("""
+            <div style="background-color: #1E1E1E; padding: 20px; border-radius: 10px; text-align: center;">
+                <h2 style="color: white;">Basic</h2>
+                <h1 style="color: #8B5CF6; margin: 20px 0;">$9.99<span style="font-size: 16px; color: #A1A1AA;">/mo</span></h1>
+                <p style="color: #8B5CF6; font-size: 14px;">Image & Video Generation</p>
+                <ul style="list-style: none; padding: 0; text-align: left; color: white;">
+                    <li style="margin: 10px 0;">✓ 100 Image Generations/month</li>
+                    <li style="margin: 10px 0;">✓ 50 Video Generations/month</li>
+                    <li style="margin: 10px 0;">✓ Standard Quality Output</li>
+                    <li style="margin: 10px 0;">✓ Basic Image Styles</li>
+                    <li style="margin: 10px 0;">✓ 1080p Video Resolution</li>
+                    <li style="margin: 10px 0;">✓ Email Support</li>
+                </ul>
+            </div>
+        """, unsafe_allow_html=True)
+        st.button("Get Started", key="basic_btn", use_container_width=True)
+
+    with col2:
+        st.markdown("""
+            <div style="background-color: #1E1E1E; padding: 20px; border-radius: 10px; text-align: center; border: 2px solid #8B5CF6;">
+                <div style="background: #8B5CF6; color: white; padding: 5px 10px; border-radius: 15px; position: absolute; top: -10px; right: 10px; font-size: 12px;">MOST POPULAR</div>
+                <h2 style="color: white;">Pro</h2>
+                <h1 style="color: #8B5CF6; margin: 20px 0;">$19.99<span style="font-size: 16px; color: #A1A1AA;">/mo</span></h1>
+                <p style="color: #8B5CF6; font-size: 14px;">Advanced Creation Suite</p>
+                <ul style="list-style: none; padding: 0; text-align: left; color: white;">
+                    <li style="margin: 10px 0;">✓ 500 Image Generations/month</li>
+                    <li style="margin: 10px 0;">✓ 200 Video Generations/month</li>
+                    <li style="margin: 10px 0;">✓ HD Quality Output</li>
+                    <li style="margin: 10px 0;">✓ All Image Styles</li>
+                    <li style="margin: 10px 0;">✓ 4K Video Resolution</li>
+                    <li style="margin: 10px 0;">✓ Priority Processing</li>
+                    <li style="margin: 10px 0;">✓ Advanced Motion Controls</li>
+                    <li style="margin: 10px 0;">✓ Priority Support</li>
+                </ul>
+            </div>
+        """, unsafe_allow_html=True)
+        st.button("Upgrade Now", key="pro_btn", type="primary", use_container_width=True)
+
+    with col3:
+        st.markdown("""
+            <div style="background-color: #1E1E1E; padding: 20px; border-radius: 10px; text-align: center;">
+                <h2 style="color: white;">Business</h2>
+                <h1 style="color: #8B5CF6; margin: 20px 0;">$49.99<span style="font-size: 16px; color: #A1A1AA;">/mo</span></h1>
+                <p style="color: #8B5CF6; font-size: 14px;">Professional Solution</p>
+                <ul style="list-style: none; padding: 0; text-align: left; color: white;">
+                    <li style="margin: 10px 0;">✓ 2000 Image Generations/month</li>
+                    <li style="margin: 10px 0;">✓ 1000 Video Generations/month</li>
+                    <li style="margin: 10px 0;">✓ Ultra HD Quality</li>
+                    <li style="margin: 10px 0;">✓ Custom Style Training</li>
+                    <li style="margin: 10px 0;">✓ 8K Video Resolution</li>
+                    <li style="margin: 10px 0;">✓ Instant Processing</li>
+                    <li style="margin: 10px 0;">✓ API Access</li>
+                    <li style="margin: 10px 0;">✓ Custom Branding</li>
+                    <li style="margin: 10px 0;">✓ Dedicated Support</li>
+                </ul>
+            </div>
+        """, unsafe_allow_html=True)
+        st.button("Get Business", key="business_btn", use_container_width=True)
+
+    with col4:
+        st.markdown("""
+            <div style="background-color: #1E1E1E; padding: 20px; border-radius: 10px; text-align: center;">
+                <h2 style="color: white;">Enterprise</h2>
+                <h1 style="color: #8B5CF6; margin: 20px 0;">$199.99<span style="font-size: 16px; color: #A1A1AA;">/mo</span></h1>
+                <p style="color: #8B5CF6; font-size: 14px;">Enterprise Solution</p>
+                <ul style="list-style: none; padding: 0; text-align: left; color: white;">
+                    <li style="margin: 10px 0;">✓ Unlimited Generations</li>
+                    <li style="margin: 10px 0;">✓ Maximum Quality Settings</li>
+                    <li style="margin: 10px 0;">✓ White-label Solution</li>
+                    <li style="margin: 10px 0;">✓ Custom API Integration</li>
+                    <li style="margin: 10px 0;">✓ Custom Model Training</li>
+                    <li style="margin: 10px 0;">✓ 24/7 Premium Support</li>
+                    <li style="margin: 10px 0;">✓ SLA Guarantee</li>
+                    <li style="margin: 10px 0;">✓ Custom Features</li>
+                </ul>
+            </div>
+        """, unsafe_allow_html=True)
+        st.button("Contact Sales", key="enterprise_btn", use_container_width=True)
 
 def main():
     # Add session state for user plan and current tab
