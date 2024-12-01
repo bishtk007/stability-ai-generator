@@ -51,7 +51,8 @@ def generate_image(prompt, style="", width=1024, height=1024):
         if not api_key:
             return None, None
 
-        url = "https://api.stability.ai/v1/generation/stable-diffusion-v1-6/text-to-image"
+        # Use the latest SDXL model for better quality
+        url = "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image"
         
         headers = {
             "Authorization": f"Bearer {api_key}",
@@ -59,13 +60,36 @@ def generate_image(prompt, style="", width=1024, height=1024):
             "Accept": "application/json"
         }
 
+        # Enhanced prompting for better results
+        style_prompts = {
+            "Photorealistic": "ultra realistic, 8k uhd, high detail, professional photography",
+            "Cinematic": "cinematic lighting, dramatic composition, movie still, 8k resolution",
+            "Anime": "high quality anime art, detailed illustration, Studio Ghibli style",
+            "Digital Art": "highly detailed digital art, 8k resolution, trending on artstation",
+            "Fantasy": "epic fantasy art, detailed illustration, trending on artstation, 8k"
+        }
+
+        # Add style-specific enhancements
+        style_enhancement = style_prompts.get(style, "")
+        enhanced_prompt = f"{prompt}, {style_enhancement}, masterpiece, highly detailed, sharp focus, 8k uhd" if style else f"{prompt}, masterpiece, highly detailed, sharp focus, 8k uhd"
+
         body = {
-            "text_prompts": [{"text": f"{prompt} {style}", "weight": 1}],
-            "cfg_scale": 7,
+            "text_prompts": [
+                {"text": enhanced_prompt, "weight": 1},
+                {"text": "blurry, low quality, low resolution, pixelated, watermark", "weight": -1}
+            ],
+            "cfg_scale": 8,  # Increased for better prompt adherence
             "height": height,
             "width": width,
             "samples": 1,
-            "steps": 30,
+            "steps": 50,  # Increased for better quality
+            "style_preset": "enhance",
+            "sampler": "DPM++ 2M Karras",  # Better sampler for details
+            "clip_guidance_preset": "FAST_BLUE",
+            "image_parameters": {
+                "noise_level": 20,
+                "image_format": "png"
+            }
         }
 
         response = requests.post(url, headers=headers, json=body)
@@ -75,6 +99,16 @@ def generate_image(prompt, style="", width=1024, height=1024):
         data = response.json()
         image_data = base64.b64decode(data["artifacts"][0]["base64"])
         image = Image.open(io.BytesIO(image_data))
+        
+        # Enhance image sharpness
+        enhancer = ImageEnhance.Sharpness(image)
+        image = enhancer.enhance(1.2)
+        
+        # Convert back to bytes for download
+        img_byte_arr = io.BytesIO()
+        image.save(img_byte_arr, format='PNG', quality=100)
+        image_data = img_byte_arr.getvalue()
+        
         return image, image_data
 
     except Exception as e:
