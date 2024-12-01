@@ -290,70 +290,71 @@ def main():
                         # Convert image to base64
                         image_data = base64.b64encode(uploaded_file.getvalue()).decode('utf-8')
                         
-                        # Generate video using the correct endpoint
-                        url = "https://api.stability.ai/v1/generation/stable-video-diffusion/image-to-video"
+                        # Generate video using the updated endpoint
+                        url = "https://api.stability.ai/v1beta/generation/stable-video-diffusion/text-to-video"
                         
                         headers = {
                             "Authorization": f"Bearer {api_key}",
-                            "Content-Type": "application/json",
-                            "Accept": "application/json"
+                            "Content-Type": "application/json"
                         }
 
                         body = {
-                            "image": image_data,
-                            "motion_bucket_id": motion_bucket_id,
+                            "width": 576,
+                            "height": 320,
                             "seed": seed,
-                            "cfg_scale": 1.5,
-                            "fps": 24
+                            "cfg_scale": 2.5,
+                            "motion_bucket_id": motion_bucket_id,
+                            "text_prompts": [
+                                {
+                                    "text": prompt if prompt.strip() else "Gentle motion",
+                                    "weight": 1
+                                }
+                            ]
                         }
-
-                        # Only add prompt if it's not empty
-                        if prompt.strip():
-                            body["prompt"] = prompt
 
                         response = requests.post(url, headers=headers, json=body)
                         
                         if response.status_code != 200:
-                            raise Exception(f"Non-200 response: {response.text}")
+                            st.error(f"Error: {response.text}")
+                            return
 
                         result = response.json()
                         
-                        if result and 'videos' in result and len(result['videos']) > 0:
-                            video_data = result['videos'][0]
-                            if 'video' in video_data:
-                                video_url = video_data['video']
-                                st.success("✨ Video generated successfully!")
-                                st.video(video_url)
-                                
-                                # Download button
-                                st.markdown(
-                                    f"""
-                                    <div style='text-align: center;'>
-                                        <a href="{video_url}" 
-                                           target="_blank" 
-                                           style="display: inline-block; 
-                                                  padding: 10px 20px; 
-                                                  background: linear-gradient(90deg, #6366f1, #8b5cf6); 
-                                                  color: white; 
-                                                  text-decoration: none; 
-                                                  border-radius: 5px; 
-                                                  margin-top: 10px;">
-                                            📥 Download Video
-                                        </a>
-                                    </div>
-                                    """,
-                                    unsafe_allow_html=True
-                                )
-                                
-                                # Display generation details
-                                with st.expander("Generation Details"):
-                                    st.write(f"Motion Strength: {motion_bucket_id}")
-                                    st.write(f"Seed: {seed}")
-                                    if prompt:
-                                        st.write(f"Prompt: {prompt}")
-                                    st.write(f"Style: {motion_style}")
-                            else:
-                                st.error("No video URL in response")
+                        # Updated response handling
+                        if 'base64' in result:
+                            # Save the video
+                            video_data = base64.b64decode(result['base64'])
+                            
+                            # Save to a temporary file
+                            temp_file = "temp_video.mp4"
+                            with open(temp_file, "wb") as f:
+                                f.write(video_data)
+                            
+                            # Display the video
+                            st.success("✨ Video generated successfully!")
+                            st.video(temp_file)
+                            
+                            # Download button
+                            st.download_button(
+                                label="📥 Download Video",
+                                data=video_data,
+                                file_name=f"generated_video_{int(time.time())}.mp4",
+                                mime="video/mp4"
+                            )
+                            
+                            # Display generation details
+                            with st.expander("Generation Details"):
+                                st.write(f"Motion Strength: {motion_bucket_id}")
+                                st.write(f"Seed: {seed}")
+                                if prompt:
+                                    st.write(f"Prompt: {prompt}")
+                                st.write(f"Style: {motion_style}")
+                            
+                            # Clean up temp file
+                            try:
+                                os.remove(temp_file)
+                            except:
+                                pass
                         else:
                             st.error("Invalid response format from API")
 
