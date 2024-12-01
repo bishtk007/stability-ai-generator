@@ -291,27 +291,24 @@ def main():
                         image_data = base64.b64encode(uploaded_file.getvalue()).decode('utf-8')
                         
                         # Generate video using the correct endpoint
-url = "https://api.stability.ai/v1/generation/stable-video-diffusion/image-to-video/upscale"
-
-headers = {
-    "Authorization": f"Bearer {api_key}",
-    "Content-Type": "application/json",
-    "Accept": "application/json"
-}
-
-body = {
-    "image": image_data,
-    "seed": seed,
-    "cfg_scale": 2.5,
-    "motion_bucket_id": motion_bucket_id,
-    "fps": 24
-}
-
-if prompt.strip():
-    body["text_prompt"] = prompt
-                                }
-                            ]
+                        url = "https://api.stability.ai/v1/generation/stable-video-diffusion/image-to-video/upscale"
+                        
+                        headers = {
+                            "Authorization": f"Bearer {api_key}",
+                            "Content-Type": "application/json",
+                            "Accept": "application/json"
                         }
+
+                        body = {
+                            "image": image_data,
+                            "seed": seed,
+                            "cfg_scale": 2.5,
+                            "motion_bucket_id": motion_bucket_id,
+                            "fps": 24
+                        }
+
+                        if prompt.strip():
+                            body["text_prompt"] = prompt
 
                         response = requests.post(url, headers=headers, json=body)
                         
@@ -321,7 +318,6 @@ if prompt.strip():
 
                         result = response.json()
                         
-                        # Updated response handling
                         if 'base64' in result:
                             # Save the video
                             video_data = base64.b64decode(result['base64'])
