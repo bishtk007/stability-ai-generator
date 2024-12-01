@@ -4,78 +4,123 @@ from PIL import Image
 import io
 import os
 import base64
-import random
 import time
 from video_app import video_generation_ui
 
-# Set page config and styling
-st.set_page_config(
-    page_title="AI Art & Video Creator",
-    page_icon="🎨",
-    layout="wide",
-    initial_sidebar_state="collapsed"
-)
+# Set page config
+st.set_page_config(page_title="AI Art Generator", layout="wide")
 
-# Add custom CSS
+# Custom CSS for pricing modal and upgrade button
 st.markdown("""
     <style>
-    /* Base theme */
-    .stApp {
-        background-color: #1a1b1e;
+    /* Floating upgrade button */
+    .upgrade-button {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(45deg, #ff69b4, #ff8c00);
+        padding: 10px 20px;
+        border-radius: 20px;
+        color: white;
+        text-decoration: none;
+        font-weight: bold;
+        z-index: 1000;
+        cursor: pointer;
+    }
+    
+    /* Pricing cards */
+    .pricing-container {
+        display: flex;
+        justify-content: space-around;
+        padding: 20px;
+        gap: 20px;
+    }
+    
+    .pricing-card {
+        background: #2d2f34;
+        border-radius: 15px;
+        padding: 20px;
+        width: 300px;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .pricing-card.popular {
+        border: 2px solid #ff69b4;
+        transform: scale(1.05);
+    }
+    
+    .price {
+        font-size: 2.5rem;
+        color: #ff69b4;
+        margin: 20px 0;
+    }
+    
+    .feature-list {
+        list-style: none;
+        padding: 0;
+        margin: 20px 0;
         color: white;
     }
     
-    /* Hide unnecessary elements */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    
-    /* Custom styling */
-    .stTabs {
-        background-color: #23252a;
-        border-radius: 10px;
-        padding: 10px;
+    .feature-list li {
+        margin: 10px 0;
     }
     
-    .stTab {
-        color: white !important;
-    }
-    
-    .stTextInput > div > div > input {
-        background-color: #2d2f34;
-        color: white !important;
-    }
-    
-    .stButton>button {
+    .buy-button {
         background: linear-gradient(45deg, #ff69b4, #ff8c00);
         color: white;
-    }
-
-    .stSelectbox > div > div {
-        background-color: #2d2f34;
-        color: white;
-    }
-
-    h1, h2, h3 {
-        color: white !important;
-    }
-
-    .upgrade-section {
-        background-color: #23252a;
-        padding: 2rem;
-        border-radius: 10px;
-        margin-top: 2rem;
-        text-align: center;
-    }
-
-    .remaining-counter {
-        background-color: #23252a;
-        padding: 1rem;
-        border-radius: 10px;
-        margin-top: 1rem;
-        color: #ff69b4;
+        padding: 10px 20px;
+        border-radius: 20px;
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 20px;
     }
     </style>
+""", unsafe_allow_html=True)
+
+def show_pricing_modal():
+    st.markdown("""
+        <div class="pricing-container">
+            <div class="pricing-card">
+                <h2>Basic</h2>
+                <div class="price">$9.99/mo</div>
+                <ul class="feature-list">
+                    <li>✨ 100 Generations/month</li>
+                    <li>🎨 Standard Quality</li>
+                    <li>⚡ Normal Processing Speed</li>
+                    <li>📧 Email Support</li>
+                </ul>
+                <a href="#" class="buy-button">Get Started</a>
+            </div>
+            
+            <div class="pricing-card popular">
+                <h2>Pro</h2>
+                <div class="price">$19.99/mo</div>
+                <ul class="feature-list">
+                    <li>✨ 500 Generations/month</li>
+                    <li>🎨 HD Quality</li>
+                    <li>⚡ Priority Processing</li>
+                    <li>🎯 Advanced Settings</li>
+                    <li>💬 Priority Support</li>
+                </ul>
+                <a href="#" class="buy-button">Most Popular</a>
+            </div>
+            
+            <div class="pricing-card">
+                <h2>Enterprise</h2>
+                <div class="price">$49.99/mo</div>
+                <ul class="feature-list">
+                    <li>✨ Unlimited Generations</li>
+                    <li>🎨 Ultra HD Quality</li>
+                    <li>⚡ Instant Processing</li>
+                    <li>🎯 Custom API Access</li>
+                    <li>🤝 Dedicated Support</li>
+                    <li>📊 Analytics Dashboard</li>
+                </ul>
+                <a href="#" class="buy-button">Contact Sales</a>
+            </div>
+        </div>
     """, unsafe_allow_html=True)
 
 def generate_image(prompt, style="", width=1024, height=1024):
@@ -116,39 +161,25 @@ def main():
     if 'user_plan' not in st.session_state:
         st.session_state.user_plan = 'free'
         st.session_state.images_remaining = 10
+        st.session_state.show_pricing = False
+
+    # Add floating upgrade button
+    st.markdown("""
+        <div class="upgrade-button" onclick="document.getElementById('pricing-section').scrollIntoView();">
+            ⚡ Upgrade
+        </div>
+    """, unsafe_allow_html=True)
 
     # Create tabs for Image and Video Generation
-    tab1, tab2 = st.tabs(["🖼️ Image Generation", "🎥 Video Generation"])
+    tab1, tab2, tab3 = st.tabs(["🖼️ Image Generation", "🎥 Video Generation", "💎 Pricing"])
 
     with tab1:
-        st.markdown("""
-            <div style='padding: 1rem; border-radius: 10px; margin-bottom: 1rem;'>
-                <h1 style='color: white; margin: 0; font-size: 2rem;'>AI Image Creator</h1>
-                <p style='color: #ff69b4; font-size: 1.2rem; margin-top: 0.5rem;'>
-                    Transform Your Ideas into Art
-                </p>
-            </div>
-        """, unsafe_allow_html=True)
-
-        # Image generation UI
-        prompt = st.text_input("", 
-                             placeholder="Describe what you want to see",
-                             key="image_prompt")
+        st.title("Generate Images with AI")
+        prompt = st.text_input("Describe what you want to see", key="image_prompt")
         
         col1, col2 = st.columns(2)
         with col1:
-            styles = [
-                "None",
-                "Photorealistic",
-                "Digital Art",
-                "Cinematic",
-                "Anime",
-                "Oil Painting",
-                "Watercolor",
-                "3D Render",
-                "Comic Book",
-                "Fantasy Art"
-            ]
+            styles = ["None", "Photorealistic", "Cinematic", "Anime", "Digital Art", "Fantasy"]
             selected_style = st.selectbox("Style", styles, key="image_style")
 
         with col2:
@@ -159,10 +190,11 @@ def main():
             }
             selected_ratio = st.selectbox("Aspect Ratio", list(aspect_ratios.keys()), key="image_ratio")
 
-        if st.button("Generate", type="primary", key="image_generate", use_container_width=True):
+        if st.button("Generate", type="primary", key="image_generate"):
             if prompt:
                 if st.session_state.user_plan == 'free' and st.session_state.images_remaining <= 0:
                     st.warning("⚡ You've used all your free images for today! Upgrade to Pro for unlimited generations.")
+                    st.session_state.show_pricing = True
                     return
 
                 with st.spinner("Creating your masterpiece..."):
@@ -184,38 +216,14 @@ def main():
                         
                         if st.session_state.user_plan == 'free':
                             st.session_state.images_remaining -= 1
-
-        # Display remaining generations for free users
-        if st.session_state.user_plan == 'free':
-            st.markdown(f"""
-                <div class='remaining-counter'>
-                    <p style='margin: 0; text-align: center;'>
-                        ⚡ {st.session_state.images_remaining} generations remaining today
-                    </p>
-                </div>
-            """, unsafe_allow_html=True)
+                            st.info(f"⚡ {st.session_state.images_remaining} generations remaining today")
 
     with tab2:
         video_generation_ui()
 
-    # Add upgrade section at the bottom
-    st.markdown("""
-        <div class='upgrade-section'>
-            <h2 style='color: white; margin: 0;'>⚡ Upgrade to Pro</h2>
-            <p style='color: #ff69b4; font-size: 1.2rem; margin: 1rem 0;'>
-                Get unlimited generations and premium features
-            </p>
-            <div style='margin: 1rem;'>
-                <h3 style='color: #ff69b4;'>$9.99/month</h3>
-                <ul style='color: white; list-style: none; padding: 0;'>
-                    <li>✨ Unlimited Generations</li>
-                    <li>🚀 Instant Generation</li>
-                    <li>🎨 Priority Support</li>
-                    <li>🎯 Advanced Settings</li>
-                </ul>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
+    with tab3:
+        st.title("Choose Your Plan")
+        show_pricing_modal()
 
 if __name__ == "__main__":
     main()
