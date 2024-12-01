@@ -102,8 +102,7 @@ def show_pricing_modal():
             </div>
         """, unsafe_allow_html=True)
         st.button("Get Started", key="basic_btn", use_container_width=True)
-
-    with col2:
+            with col2:
         st.markdown("""
             <div style="background-color: #1E1E1E; padding: 20px; border-radius: 10px; text-align: center; border: 2px solid #8B5CF6;">
                 <div style="background: #8B5CF6; color: white; padding: 5px 10px; border-radius: 15px; position: absolute; top: -10px; right: 10px; font-size: 12px;">MOST POPULAR</div>
@@ -178,8 +177,7 @@ def main():
             ⚡ Upgrade
         </div>
     """, unsafe_allow_html=True)
-
-    # Create tabs for Image and Video Generation
+        # Create tabs for Image and Video Generation
     tab1, tab2, tab3 = st.tabs(["🖼️ Image Generation", "🎥 Video Generation", "💎 Pricing"])
 
     with tab1:
