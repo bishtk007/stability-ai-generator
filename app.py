@@ -139,77 +139,79 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 def show_pricing_modal():
-    st.markdown("""
-        <div class="pricing-container">
-            <div class="pricing-card">
-                <div class="plan-name">Basic</div>
-                <div class="price">$9.99<span>/mo</span></div>
-                <div class="generation-type">Image & Video Generation</div>
-                <ul class="feature-list">
-                    <li>100 Image Generations/month</li>
-                    <li>50 Video Generations/month</li>
-                    <li>Standard Quality Output</li>
-                    <li>Basic Image Styles</li>
-                    <li>1080p Video Resolution</li>
-                    <li>Email Support</li>
-                </ul>
-                <button class="buy-button">Get Started</button>
-            </div>
+    st.markdown("## Choose Your Perfect Plan", unsafe_allow_html=True)
+    
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.markdown("""
+            ### Basic
+            #### $9.99/mo
+            **Image & Video Generation**
             
-            <div class="pricing-card popular">
-                <div class="popular-badge">MOST POPULAR</div>
-                <div class="plan-name">Pro</div>
-                <div class="price">$19.99<span>/mo</span></div>
-                <div class="generation-type">Advanced Creation Suite</div>
-                <ul class="feature-list">
-                    <li>500 Image Generations/month</li>
-                    <li>200 Video Generations/month</li>
-                    <li>HD Quality Output</li>
-                    <li>All Image Styles</li>
-                    <li>4K Video Resolution</li>
-                    <li>Priority Processing</li>
-                    <li>Advanced Motion Controls</li>
-                    <li>Priority Support</li>
-                </ul>
-                <button class="buy-button">Upgrade Now</button>
-            </div>
-            
-            <div class="pricing-card">
-                <div class="plan-name">Business</div>
-                <div class="price">$49.99<span>/mo</span></div>
-                <div class="generation-type">Professional Solution</div>
-                <ul class="feature-list">
-                    <li>2000 Image Generations/month</li>
-                    <li>1000 Video Generations/month</li>
-                    <li>Ultra HD Quality</li>
-                    <li>Custom Style Training</li>
-                    <li>8K Video Resolution</li>
-                    <li>Instant Processing</li>
-                    <li>API Access</li>
-                    <li>Custom Branding</li>
-                    <li>Dedicated Support</li>
-                </ul>
-                <button class="buy-button">Get Business</button>
-            </div>
+            - 100 Image Generations/month
+            - 50 Video Generations/month
+            - Standard Quality Output
+            - Basic Image Styles
+            - 1080p Video Resolution
+            - Email Support
+        """)
+        st.button("Get Started", key="basic_btn", use_container_width=True)
 
-            <div class="pricing-card">
-                <div class="plan-name">Enterprise</div>
-                <div class="price">$199.99<span>/mo</span></div>
-                <div class="generation-type">Enterprise Solution</div>
-                <ul class="feature-list">
-                    <li>Unlimited Generations</li>
-                    <li>Maximum Quality Settings</li>
-                    <li>White-label Solution</li>
-                    <li>Custom API Integration</li>
-                    <li>Custom Model Training</li>
-                    <li>24/7 Premium Support</li>
-                    <li>SLA Guarantee</li>
-                    <li>Custom Features</li>
-                </ul>
-                <button class="buy-button">Contact Sales</button>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
+    with col2:
+        st.markdown("""
+            ### 🌟 Pro
+            #### $19.99/mo
+            **Advanced Creation Suite**
+            
+            - 500 Image Generations/month
+            - 200 Video Generations/month
+            - HD Quality Output
+            - All Image Styles
+            - 4K Video Resolution
+            - Priority Processing
+            - Advanced Motion Controls
+            - Priority Support
+        """)
+        st.button("Upgrade Now", key="pro_btn", type="primary", use_container_width=True)
+
+    with col3:
+        st.markdown("""
+            ### Business
+            #### $49.99/mo
+            **Professional Solution**
+            
+            - 2000 Image Generations/month
+            - 1000 Video Generations/month
+            - Ultra HD Quality
+            - Custom Style Training
+            - 8K Video Resolution
+            - Instant Processing
+            - API Access
+            - Custom Branding
+            - Dedicated Support
+        """)
+        st.button("Get Business", key="business_btn", use_container_width=True)
+
+    with col4:
+        st.markdown("""
+            ### Enterprise
+            #### $199.99/mo
+            **Enterprise Solution**
+            
+            - Unlimited Generations
+            - Maximum Quality Settings
+            - White-label Solution
+            - Custom API Integration
+            - Custom Model Training
+            - 24/7 Premium Support
+            - SLA Guarantee
+            - Custom Features
+        """)
+        st.button("Contact Sales", key="enterprise_btn", use_container_width=True)
+
+    # Add some spacing
+    st.markdown("<br><br>", unsafe_allow_html=True)
 
 def generate_image(prompt, style="", width=1024, height=1024):
     try:
