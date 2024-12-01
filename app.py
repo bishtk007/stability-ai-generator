@@ -18,7 +18,7 @@ st.markdown("""
         position: fixed;
         top: 20px;
         right: 20px;
-        background: linear-gradient(45deg, #ff69b4, #ff8c00);
+        background: linear-gradient(90deg, #6366f1, #8b5cf6);
         padding: 10px 20px;
         border-radius: 20px;
         color: white;
@@ -26,6 +26,7 @@ st.markdown("""
         font-weight: bold;
         z-index: 1000;
         cursor: pointer;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
     }
     
     /* Pricing cards */
@@ -34,47 +35,105 @@ st.markdown("""
         justify-content: space-around;
         padding: 20px;
         gap: 20px;
+        flex-wrap: wrap;
     }
     
     .pricing-card {
-        background: #2d2f34;
-        border-radius: 15px;
-        padding: 20px;
-        width: 300px;
+        background: linear-gradient(145deg, #1a1c23, #2d2f34);
+        border-radius: 20px;
+        padding: 30px;
+        width: 320px;
         text-align: center;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease;
+        border: 1px solid #3f3f46;
+    }
+    
+    .pricing-card:hover {
+        transform: translateY(-5px);
     }
     
     .pricing-card.popular {
-        border: 2px solid #ff69b4;
-        transform: scale(1.05);
+        border: 2px solid #6366f1;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .popular-badge {
+        position: absolute;
+        top: 20px;
+        right: -35px;
+        background: #6366f1;
+        color: white;
+        padding: 8px 40px;
+        transform: rotate(45deg);
+        font-size: 14px;
+    }
+    
+    .plan-name {
+        color: #e4e4e7;
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 10px;
     }
     
     .price {
-        font-size: 2.5rem;
-        color: #ff69b4;
+        font-size: 36px;
+        color: #6366f1;
         margin: 20px 0;
+        font-weight: bold;
+    }
+    
+    .price span {
+        font-size: 16px;
+        color: #a1a1aa;
     }
     
     .feature-list {
         list-style: none;
         padding: 0;
         margin: 20px 0;
-        color: white;
+        color: #e4e4e7;
+        text-align: left;
     }
     
     .feature-list li {
-        margin: 10px 0;
+        margin: 15px 0;
+        padding-left: 25px;
+        position: relative;
+    }
+    
+    .feature-list li:before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        color: #6366f1;
     }
     
     .buy-button {
-        background: linear-gradient(45deg, #ff69b4, #ff8c00);
+        background: linear-gradient(90deg, #6366f1, #8b5cf6);
         color: white;
-        padding: 10px 20px;
-        border-radius: 20px;
+        padding: 12px 30px;
+        border-radius: 25px;
         text-decoration: none;
         display: inline-block;
         margin-top: 20px;
+        font-weight: bold;
+        transition: transform 0.2s ease;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .buy-button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .generation-type {
+        color: #8b5cf6;
+        font-size: 14px;
+        margin-top: 10px;
+        font-weight: bold;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -83,42 +142,71 @@ def show_pricing_modal():
     st.markdown("""
         <div class="pricing-container">
             <div class="pricing-card">
-                <h2>Basic</h2>
-                <div class="price">$9.99/mo</div>
+                <div class="plan-name">Starter</div>
+                <div class="price">$4.99<span>/mo</span></div>
+                <div class="generation-type">Image & Video Generation</div>
                 <ul class="feature-list">
-                    <li>✨ 100 Generations/month</li>
-                    <li>🎨 Standard Quality</li>
-                    <li>⚡ Normal Processing Speed</li>
-                    <li>📧 Email Support</li>
+                    <li>50 Image Generations/month</li>
+                    <li>25 Video Generations/month</li>
+                    <li>Standard Quality Output</li>
+                    <li>Basic Image Styles</li>
+                    <li>720p Video Resolution</li>
+                    <li>Community Support</li>
                 </ul>
-                <a href="#" class="buy-button">Get Started</a>
+                <button class="buy-button">Get Started</button>
             </div>
             
             <div class="pricing-card popular">
-                <h2>Pro</h2>
-                <div class="price">$19.99/mo</div>
+                <div class="popular-badge">MOST POPULAR</div>
+                <div class="plan-name">Creator Pro</div>
+                <div class="price">$14.99<span>/mo</span></div>
+                <div class="generation-type">Advanced Creation Suite</div>
                 <ul class="feature-list">
-                    <li>✨ 500 Generations/month</li>
-                    <li>🎨 HD Quality</li>
-                    <li>⚡ Priority Processing</li>
-                    <li>🎯 Advanced Settings</li>
-                    <li>💬 Priority Support</li>
+                    <li>200 Image Generations/month</li>
+                    <li>100 Video Generations/month</li>
+                    <li>HD Quality Output</li>
+                    <li>All Image Styles</li>
+                    <li>1080p Video Resolution</li>
+                    <li>Priority Processing</li>
+                    <li>Advanced Motion Controls</li>
+                    <li>Priority Email Support</li>
                 </ul>
-                <a href="#" class="buy-button">Most Popular</a>
+                <button class="buy-button">Upgrade Now</button>
             </div>
             
             <div class="pricing-card">
-                <h2>Enterprise</h2>
-                <div class="price">$49.99/mo</div>
+                <div class="plan-name">Business</div>
+                <div class="price">$39.99<span>/mo</span></div>
+                <div class="generation-type">Enterprise Solution</div>
                 <ul class="feature-list">
-                    <li>✨ Unlimited Generations</li>
-                    <li>🎨 Ultra HD Quality</li>
-                    <li>⚡ Instant Processing</li>
-                    <li>🎯 Custom API Access</li>
-                    <li>🤝 Dedicated Support</li>
-                    <li>📊 Analytics Dashboard</li>
+                    <li>1000 Image Generations/month</li>
+                    <li>500 Video Generations/month</li>
+                    <li>4K Ultra HD Quality</li>
+                    <li>Custom Style Training</li>
+                    <li>4K Video Resolution</li>
+                    <li>Instant Processing</li>
+                    <li>API Access</li>
+                    <li>Custom Branding</li>
+                    <li>Dedicated Support</li>
                 </ul>
-                <a href="#" class="buy-button">Contact Sales</a>
+                <button class="buy-button">Contact Sales</button>
+            </div>
+
+            <div class="pricing-card">
+                <div class="plan-name">Enterprise</div>
+                <div class="price">Custom<span> pricing</span></div>
+                <div class="generation-type">Custom Solution</div>
+                <ul class="feature-list">
+                    <li>Unlimited Generations</li>
+                    <li>Custom Quality Settings</li>
+                    <li>White-label Solution</li>
+                    <li>Custom API Integration</li>
+                    <li>Custom Model Training</li>
+                    <li>24/7 Premium Support</li>
+                    <li>SLA Guarantee</li>
+                    <li>Custom Features</li>
+                </ul>
+                <button class="buy-button">Contact Us</button>
             </div>
         </div>
     """, unsafe_allow_html=True)
