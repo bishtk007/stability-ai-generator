@@ -290,24 +290,25 @@ def main():
                         # Convert image to base64
                         image_data = base64.b64encode(uploaded_file.getvalue()).decode('utf-8')
                         
-                        # Generate video using the updated endpoint
-                        url = "https://api.stability.ai/v1beta/generation/stable-video-diffusion/text-to-video"
-                        
-                        headers = {
-                            "Authorization": f"Bearer {api_key}",
-                            "Content-Type": "application/json"
-                        }
+                        # Generate video using the correct endpoint
+url = "https://api.stability.ai/v1/generation/stable-video-diffusion/image-to-video/upscale"
 
-                        body = {
-                            "width": 576,
-                            "height": 320,
-                            "seed": seed,
-                            "cfg_scale": 2.5,
-                            "motion_bucket_id": motion_bucket_id,
-                            "text_prompts": [
-                                {
-                                    "text": prompt if prompt.strip() else "Gentle motion",
-                                    "weight": 1
+headers = {
+    "Authorization": f"Bearer {api_key}",
+    "Content-Type": "application/json",
+    "Accept": "application/json"
+}
+
+body = {
+    "image": image_data,
+    "seed": seed,
+    "cfg_scale": 2.5,
+    "motion_bucket_id": motion_bucket_id,
+    "fps": 24
+}
+
+if prompt.strip():
+    body["text_prompt"] = prompt
                                 }
                             ]
                         }
