@@ -5,7 +5,11 @@ import io
 import os
 import base64
 import time
+from dotenv import load_dotenv
 from video_app import video_generation_ui
+
+# Load environment variables
+load_dotenv()
 
 # Set page config
 st.set_page_config(page_title="AI Art Generator", layout="wide")
@@ -31,9 +35,25 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+def get_api_key():
+    # Try getting from Streamlit secrets first
+    try:
+        return st.secrets["STABILITY_API_KEY"]
+    except:
+        # If not in secrets, try environment variables
+        api_key = os.getenv("STABILITY_API_KEY")
+        if api_key:
+            return api_key
+        else:
+            st.error("API key not found. Please set STABILITY_API_KEY in secrets.toml or .env file")
+            return None
+
 def generate_image(prompt, style="", width=1024, height=1024):
     try:
-        api_key = st.secrets["STABILITY_API_KEY"]
+        api_key = get_api_key()
+        if not api_key:
+            return None, None
+
         url = "https://api.stability.ai/v1/generation/stable-diffusion-v1-6/text-to-image"
         
         headers = {
