@@ -85,23 +85,25 @@ def show_pricing_modal():
     # Create columns for the pricing cards
     col1, col2, col3, col4 = st.columns(4)
 
-       with col1:
+    with col1:
         st.markdown("""
             <div style="background-color: #1E1E1E; padding: 20px; border-radius: 10px; text-align: center;">
-                # ... content ...
+                <h2 style="color: white;">Basic</h2>
+                <h1 style="color: #8B5CF6; margin: 20px 0;">$9.99<span style="font-size: 16px; color: #A1A1AA;">/mo</span></h1>
+                <p style="color: #8B5CF6; font-size: 14px;">Image & Video Generation</p>
+                <ul style="list-style: none; padding: 0; text-align: left; color: white;">
+                    <li style="margin: 10px 0;">✓ 100 Image Generations/month</li>
+                    <li style="margin: 10px 0;">✓ 50 Video Generations/month</li>
+                    <li style="margin: 10px 0;">✓ Standard Quality Output</li>
+                    <li style="margin: 10px 0;">✓ Basic Image Styles</li>
+                    <li style="margin: 10px 0;">✓ 1080p Video Resolution</li>
+                    <li style="margin: 10px 0;">✓ Email Support</li>
+                </ul>
             </div>
         """, unsafe_allow_html=True)
         st.button("Get Started", key="basic_btn", use_container_width=True)
 
-    with col2:  # <-- This line should be at the same indentation level as "with col1:"
-        st.markdown("""
-            <div style="background-color: #1E1E1E; padding: 20px; border-radius: 10px; text-align: center; border: 2px solid #8B5CF6;">
-                # ... content ...
-            </div>
-        """, unsafe_allow_html=True)
-        """, unsafe_allow_html=True)
-        st.button("Get Started", key="basic_btn", use_container_width=True)
-            with col2:
+    with col2:
         st.markdown("""
             <div style="background-color: #1E1E1E; padding: 20px; border-radius: 10px; text-align: center; border: 2px solid #8B5CF6;">
                 <div style="background: #8B5CF6; color: white; padding: 5px 10px; border-radius: 15px; position: absolute; top: -10px; right: 10px; font-size: 12px;">MOST POPULAR</div>
@@ -176,7 +178,8 @@ def main():
             ⚡ Upgrade
         </div>
     """, unsafe_allow_html=True)
-        # Create tabs for Image and Video Generation
+
+    # Create tabs for Image and Video Generation
     tab1, tab2, tab3 = st.tabs(["🖼️ Image Generation", "🎥 Video Generation", "💎 Pricing"])
 
     with tab1:
