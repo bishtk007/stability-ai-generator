@@ -142,63 +142,63 @@ def show_pricing_modal():
     st.markdown("""
         <div class="pricing-container">
             <div class="pricing-card">
-                <div class="plan-name">Starter</div>
-                <div class="price">$4.99<span>/mo</span></div>
+                <div class="plan-name">Basic</div>
+                <div class="price">$9.99<span>/mo</span></div>
                 <div class="generation-type">Image & Video Generation</div>
                 <ul class="feature-list">
-                    <li>50 Image Generations/month</li>
-                    <li>25 Video Generations/month</li>
+                    <li>100 Image Generations/month</li>
+                    <li>50 Video Generations/month</li>
                     <li>Standard Quality Output</li>
                     <li>Basic Image Styles</li>
-                    <li>720p Video Resolution</li>
-                    <li>Community Support</li>
+                    <li>1080p Video Resolution</li>
+                    <li>Email Support</li>
                 </ul>
                 <button class="buy-button">Get Started</button>
             </div>
             
             <div class="pricing-card popular">
                 <div class="popular-badge">MOST POPULAR</div>
-                <div class="plan-name">Creator Pro</div>
-                <div class="price">$14.99<span>/mo</span></div>
+                <div class="plan-name">Pro</div>
+                <div class="price">$19.99<span>/mo</span></div>
                 <div class="generation-type">Advanced Creation Suite</div>
                 <ul class="feature-list">
-                    <li>200 Image Generations/month</li>
-                    <li>100 Video Generations/month</li>
+                    <li>500 Image Generations/month</li>
+                    <li>200 Video Generations/month</li>
                     <li>HD Quality Output</li>
                     <li>All Image Styles</li>
-                    <li>1080p Video Resolution</li>
+                    <li>4K Video Resolution</li>
                     <li>Priority Processing</li>
                     <li>Advanced Motion Controls</li>
-                    <li>Priority Email Support</li>
+                    <li>Priority Support</li>
                 </ul>
                 <button class="buy-button">Upgrade Now</button>
             </div>
             
             <div class="pricing-card">
                 <div class="plan-name">Business</div>
-                <div class="price">$39.99<span>/mo</span></div>
-                <div class="generation-type">Enterprise Solution</div>
+                <div class="price">$49.99<span>/mo</span></div>
+                <div class="generation-type">Professional Solution</div>
                 <ul class="feature-list">
-                    <li>1000 Image Generations/month</li>
-                    <li>500 Video Generations/month</li>
-                    <li>4K Ultra HD Quality</li>
+                    <li>2000 Image Generations/month</li>
+                    <li>1000 Video Generations/month</li>
+                    <li>Ultra HD Quality</li>
                     <li>Custom Style Training</li>
-                    <li>4K Video Resolution</li>
+                    <li>8K Video Resolution</li>
                     <li>Instant Processing</li>
                     <li>API Access</li>
                     <li>Custom Branding</li>
                     <li>Dedicated Support</li>
                 </ul>
-                <button class="buy-button">Contact Sales</button>
+                <button class="buy-button">Get Business</button>
             </div>
 
             <div class="pricing-card">
                 <div class="plan-name">Enterprise</div>
-                <div class="price">Custom<span> pricing</span></div>
-                <div class="generation-type">Custom Solution</div>
+                <div class="price">$199.99<span>/mo</span></div>
+                <div class="generation-type">Enterprise Solution</div>
                 <ul class="feature-list">
                     <li>Unlimited Generations</li>
-                    <li>Custom Quality Settings</li>
+                    <li>Maximum Quality Settings</li>
                     <li>White-label Solution</li>
                     <li>Custom API Integration</li>
                     <li>Custom Model Training</li>
@@ -206,7 +206,7 @@ def show_pricing_modal():
                     <li>SLA Guarantee</li>
                     <li>Custom Features</li>
                 </ul>
-                <button class="buy-button">Contact Us</button>
+                <button class="buy-button">Contact Sales</button>
             </div>
         </div>
     """, unsafe_allow_html=True)
